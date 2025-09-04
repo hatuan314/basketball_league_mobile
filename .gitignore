@@ -43,6 +43,8 @@ cursor-config.json
 .pub/
 /build/
 /g.sh
+**/pubspec.lock
+**/*.lock
 
 # Symbolication related
 app.*.symbols
@@ -54,13 +56,14 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/gradlew.bat
+/android/local.properties
 
 # Melos related
 pubspec_overrides.yaml
 
 #.env.dart
 .gradle/
-*.lock
 **/lib/generated_plugin_registrant.dart
 /lib/gen/
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
@@ -71,3 +74,11 @@ pubspec_overrides.yaml
 /android/app/.cxx/RelWithDebInfo/24f6k123/
 /android/app/.cxx/
 /.cursor/
+
+# Figma MCP Configuration - Allow config files but ignore sensitive data
+!/.cursor/mcp.json
+!/.cursor/figma-mcp-setup.md
+!/.cursor/README.md
+!/.cursor/env.template
+/.cursor/.env
+/.cursor/.env.*
