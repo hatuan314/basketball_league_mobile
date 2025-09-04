@@ -1,5 +1,5 @@
 import 'package:baseketball_league_mobile/common/assets/image_paths.dart';
-import 'package:baseketball_league_mobile/presentation/home/bloc/home_cubit.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/season_list/bloc/season_list_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_color.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_style.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/image/app_image_widget.dart';
@@ -35,7 +35,7 @@ class EmptySeasonDataWidget extends StatelessWidget {
               backgroundColor: WidgetStatePropertyAll(AppColors.orange),
             ),
             onPressed: () {
-              context.read<HomeCubit>().createRandomSeasons();
+              context.read<SeasonListCubit>().createRandomSeasons();
             },
             child: Text(
               'Tạo mùa giải ngẫu nhiên',

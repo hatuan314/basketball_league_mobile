@@ -1,5 +1,6 @@
 import 'package:baseketball_league_mobile/common/assets/image_paths.dart';
 import 'package:baseketball_league_mobile/common/constants/router_name.dart';
+import 'package:baseketball_league_mobile/common/extentions/route_extension.dart';
 import 'package:baseketball_league_mobile/domain/entities/season_entity.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/image/app_image_widget.dart';
 import 'package:flutter/material.dart';
@@ -7,9 +8,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-class SeasonIteamCard extends StatelessWidget {
+class SeasonItemCard extends StatelessWidget {
   final SeasonEntity season;
-  const SeasonIteamCard({super.key, required this.season});
+  const SeasonItemCard({super.key, required this.season});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +29,8 @@ class SeasonIteamCard extends StatelessWidget {
       child: InkWell(
         onTap: () {
           context.push(
-            RouterName.playerList,
+            RouterName.seasonDetail.toSeasonRoute(),
+            extra: season,
           ); // Tạm thời chuyển đến màn hình danh sách cầu thủ
         },
         child: Padding(

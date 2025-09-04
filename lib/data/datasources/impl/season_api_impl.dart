@@ -2,10 +2,11 @@ import 'package:baseketball_league_mobile/common/injection.dart';
 import 'package:baseketball_league_mobile/common/postgresql/connect_database.dart';
 import 'package:baseketball_league_mobile/data/datasources/season_api.dart';
 import 'package:baseketball_league_mobile/data/models/season_model.dart';
+import 'package:dartz/dartz.dart';
 
 class SeasonApiImpl implements SeasonApi {
   @override
-  Future<bool> createSeason(SeasonModel season) async {
+  Future<Either<Exception, bool>> createSeason(SeasonModel season) async {
     final conn = sl<PostgresConnection>().conn;
     try {
       final query = '''
@@ -23,53 +24,75 @@ class SeasonApiImpl implements SeasonApi {
       ''';
 
       await conn.execute(query);
-      return true;
+      return const Right(true);
     } catch (e) {
       print('Lỗi khi tạo mùa giải: $e');
-      return false;
+      return Left(Exception('Lỗi khi tạo mùa giải: $e'));
     }
   }
 
   @override
-  Future<bool> deleteSeason(int id) async {
+  Future<Either<Exception, bool>> createTable() async {
+    final conn = sl<PostgresConnection>().conn;
+    try {
+      final query = '''
+      CREATE TABLE IF NOT EXISTS season (
+        season_id SERIAL PRIMARY KEY,
+        code VARCHAR(255) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        start_date DATE,
+        end_date DATE
+      )
+      ''';
+
+      await conn.execute(query);
+      return const Right(true);
+    } catch (e) {
+      print('Lỗi khi tạo bảng mùa giải: $e');
+      return Left(Exception('Lỗi khi tạo bảng mùa giải: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, bool>> deleteSeason(int id) async {
     final conn = sl<PostgresConnection>().conn;
     try {
       final query = '''DELETE FROM season WHERE season_id = $id''';
       await conn.execute(query);
-      return true;
+      return const Right(true);
     } catch (e) {
       print('Lỗi khi xóa mùa giải: $e');
-      return false;
+      return Left(Exception('Lỗi khi xóa mùa giải: $e'));
     }
   }
 
   @override
-  Future<List<SeasonModel>> getSeasonList() async {
+  Future<Either<Exception, List<SeasonModel>>> getSeasonList() async {
     final conn = sl<PostgresConnection>().conn;
     try {
       final results = await conn.execute('SELECT * FROM season');
-      return results.map((row) => _seasonFromRow(row)).toList();
+      return Right(results.map((row) => _seasonFromRow(row)).toList());
     } catch (e) {
       print('Lỗi khi lấy danh sách mùa giải: $e');
-      return [];
+      return Left(Exception('Lỗi khi lấy danh sách mùa giải: $e'));
     }
   }
 
   @override
-  Future<List<SeasonModel>> searchSeason(String name) async {
+  Future<Either<Exception, List<SeasonModel>>> searchSeason(String name) async {
     final conn = sl<PostgresConnection>().conn;
     try {
       final query = '''SELECT * FROM season WHERE name ILIKE '%$name%' ''';
       final results = await conn.execute(query);
-      return results.map((row) => _seasonFromRow(row)).toList();
+      return Right(results.map((row) => _seasonFromRow(row)).toList());
     } catch (e) {
       print('Lỗi khi tìm kiếm mùa giải: $e');
-      return [];
+      return Left(Exception('Lỗi khi tìm kiếm mùa giải: $e'));
     }
   }
 
   @override
-  Future<bool> updateSeason(int id, SeasonModel season) async {
+  Future<Either<Exception, bool>> updateSeason(int id, SeasonModel season) async {
     final conn = sl<PostgresConnection>().conn;
     try {
       final query = '''
@@ -83,10 +106,10 @@ class SeasonApiImpl implements SeasonApi {
       ''';
 
       await conn.execute(query);
-      return true;
+      return const Right(true);
     } catch (e) {
       print('Lỗi khi cập nhật mùa giải: $e');
-      return false;
+      return Left(Exception('Lỗi khi cập nhật mùa giải: $e'));
     }
   }
 

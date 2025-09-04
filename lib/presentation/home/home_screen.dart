@@ -1,36 +1,23 @@
-import 'package:baseketball_league_mobile/domain/entities/season_entity.dart';
+import 'package:baseketball_league_mobile/common/assets/image_paths.dart';
+import 'package:baseketball_league_mobile/common/constants/router_name.dart';
 import 'package:baseketball_league_mobile/presentation/home/bloc/home_cubit.dart';
-import 'package:baseketball_league_mobile/presentation/home/widgets/empty_season_data_widget.dart';
-import 'package:baseketball_league_mobile/presentation/home/widgets/season_iteam_card.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_color.dart';
+import 'package:baseketball_league_mobile/presentation/theme/app_style.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/app_loading.dart';
+import 'package:baseketball_league_mobile/presentation/widgets/menu_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<String> _schemas = [];
-  bool _isLoading = false;
-  String _errorMessage = '';
-
   @override
   void initState() {
     super.initState();
@@ -43,7 +30,10 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: AppBar(
+        centerTitle: false,
+        title: Text('PBL', style: AppStyle.headline4),
+      ),
       body: BlocBuilder<HomeCubit, HomeState>(
         builder: (context, state) {
           if (state.status == HomeStatus.loading) {
@@ -51,16 +41,49 @@ class _MyHomePageState extends State<MyHomePage> {
           } else if (state.status == HomeStatus.error) {
             return _buildErrorView(state.errorMessage ?? 'Đã xảy ra lỗi');
           } else {
-            return _buildSeasonListView(state.seasons ?? []);
+            return Padding(
+              padding: EdgeInsets.all(16.sp),
+              child: GridView(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 4.sp,
+                  mainAxisSpacing: 4.sp,
+                  childAspectRatio: 0.8,
+                ),
+                children: [
+                  MenuButtonWidget(
+                    iconPath: AppImagePaths.basketball_season,
+                    title: "Danh sách\nGiải đấu",
+                    onTap: () {
+                      context.push(RouterName.seasonList);
+                    },
+                  ),
+                  MenuButtonWidget(
+                    iconPath: AppImagePaths.basketball_team,
+                    title: "Danh sách\nđội bóng",
+                    onTap: () {
+                      context.push(RouterName.teamList);
+                    },
+                  ),
+                  MenuButtonWidget(
+                    iconPath: AppImagePaths.stadium,
+                    color: AppColors.orange,
+                    title: "Danh sách\nsân vận động",
+                    onTap: () {},
+                  ),
+                  MenuButtonWidget(
+                    iconPath: AppImagePaths.sports_basketball_shirt_player,
+                    color: AppColors.orange,
+                    title: "Danh sách\ncầu thủ",
+                    onTap: () {
+                      context.push(RouterName.playerList);
+                    },
+                  ),
+                ],
+              ),
+            );
           }
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.orange,
-        onPressed: () {
-          // TODO: Implement add new player
-        },
-        child: const Icon(Icons.add, color: AppColors.white),
       ),
     );
   }
@@ -83,35 +106,6 @@ class _MyHomePageState extends State<MyHomePage> {
               context.read<HomeCubit>().initial();
             },
             child: Text('Thử lại'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSeasonListView(List<SeasonEntity> seasons) {
-    if (seasons.isEmpty) {
-      return EmptySeasonDataWidget();
-    }
-
-    return Padding(
-      padding: EdgeInsets.all(16.sp),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Danh sách mùa giải',
-            style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 16.sp),
-          Expanded(
-            child: ListView.builder(
-              itemCount: seasons.length,
-              itemBuilder: (context, index) {
-                final season = seasons[index];
-                return SeasonIteamCard(season: season);
-              },
-            ),
           ),
         ],
       ),

@@ -37,8 +37,8 @@ class MenuButtonWidget extends StatelessWidget {
                 padding: EdgeInsets.all(8.sp),
                 child: AppImageWidget(
                   path: iconPath,
-                  width: 24.sp,
-                  height: 24.sp,
+                  width: 36.sp,
+                  height: 36.sp,
                   color: color,
                 ),
               ),

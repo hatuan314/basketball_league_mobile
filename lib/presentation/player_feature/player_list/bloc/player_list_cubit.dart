@@ -12,44 +12,54 @@ class PlayerListCubit extends Cubit<PlayerListState> {
 
   Future<void> initial() async {
     emit(PlayerListState(status: PlayerListStatus.loading));
-    try {
-      final result = await _getPlayerList();
-      emit(
-        PlayerListState(status: PlayerListStatus.loaded, playerList: result),
-      );
-    } catch (e) {
-      emit(
-        PlayerListState(
-          status: PlayerListStatus.error,
-          errorMessage: e.toString(),
-        ),
-      );
-    }
+    final result = await _getPlayerList();
+    emit(
+      PlayerListState(status: PlayerListStatus.loaded, playerList: result),
+    );
   }
 
   Future<List<PlayerEntity>> _getPlayerList() async {
-    return await playerUseCase.getPlayerList();
+    final result = await playerUseCase.getPlayerList();
+    
+    return result.fold(
+      (exception) {
+        emit(
+          PlayerListState(
+            status: PlayerListStatus.error,
+            errorMessage: exception.toString(),
+          ),
+        );
+        return [];
+      },
+      (players) => players,
+    );
   }
 
   Future<void> createRandomGeneratedPlayerList() async {
     EasyLoading.show();
-    // try {
+    
     final result = await playerUseCase.createRandomGeneratedPlayerList();
-    if (result) {
-      emit(PlayerListState(status: PlayerListStatus.loading));
-      final result = await _getPlayerList();
-      emit(
-        PlayerListState(status: PlayerListStatus.loaded, playerList: result),
-      );
-    }
-    // } catch (e) {
-    //   emit(
-    //     PlayerListState(
-    //       status: PlayerListStatus.error,
-    //       errorMessage: e.toString(),
-    //     ),
-    //   );
-    // }
-    EasyLoading.dismiss();
+    
+    result.fold(
+      (exception) {
+        EasyLoading.dismiss();
+        emit(
+          PlayerListState(
+            status: PlayerListStatus.error,
+            errorMessage: exception.toString(),
+          ),
+        );
+      },
+      (success) async {
+        if (success) {
+          emit(PlayerListState(status: PlayerListStatus.loading));
+          final players = await _getPlayerList();
+          emit(
+            PlayerListState(status: PlayerListStatus.loaded, playerList: players),
+          );
+        }
+        EasyLoading.dismiss();
+      },
+    );
   }
 }

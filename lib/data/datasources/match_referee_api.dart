@@ -1,3 +1,5 @@
+import 'package:dartz/dartz.dart';
+
 abstract class MatchRefereeApi {
-  Future<void> createTable();
+  Future<Either<Exception, bool>> createTable();
 }

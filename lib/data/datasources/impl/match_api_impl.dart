@@ -1,12 +1,14 @@
 import 'package:baseketball_league_mobile/common/injection.dart';
 import 'package:baseketball_league_mobile/common/postgresql/connect_database.dart';
 import 'package:baseketball_league_mobile/data/datasources/match_api.dart';
+import 'package:dartz/dartz.dart';
 
 class MatchApiImpl implements MatchApi {
   @override
-  Future<void> createTable() {
+  Future<Either<Exception, bool>> createTable() async {
     final conn = sl<PostgresConnection>().conn;
-    final sql = '''
+    try {
+      final sql = '''
               CREATE TABLE IF NOT EXISTS match(
                   match_id SERIAL PRIMARY KEY,
                   round_id  INT NOT NULL REFERENCES round(round_id) ON DELETE CASCADE,
@@ -26,6 +28,11 @@ class MatchApiImpl implements MatchApi {
                   UNIQUE (round_id, match_id)
               );
               ''';
-    return conn.execute(sql);
+      await conn.execute(sql);
+      return const Right(true);
+    } catch (e) {
+      print('Lỗi khi tạo bảng match: $e');
+      return Left(Exception('Lỗi khi tạo bảng match: $e'));
+    }
   }
 }

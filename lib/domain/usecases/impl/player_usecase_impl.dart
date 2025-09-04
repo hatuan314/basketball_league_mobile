@@ -1,6 +1,7 @@
 import 'package:baseketball_league_mobile/domain/entities/player_entity.dart';
 import 'package:baseketball_league_mobile/domain/repositories/player_repository.dart';
 import 'package:baseketball_league_mobile/domain/usecases/player_usecase.dart';
+import 'package:dartz/dartz.dart';
 
 class PlayerUsecaseImpl implements PlayerUsecase {
   final PlayerRepository playerRepository;
@@ -8,32 +9,32 @@ class PlayerUsecaseImpl implements PlayerUsecase {
   PlayerUsecaseImpl({required this.playerRepository});
 
   @override
-  Future<bool> createPlayer(PlayerEntity player) {
+  Future<Either<Exception, bool>> createPlayer(PlayerEntity player) {
     return playerRepository.createPlayer(player);
   }
 
   @override
-  Future<bool> deletePlayer(int id) {
+  Future<Either<Exception, bool>> deletePlayer(int id) {
     return playerRepository.deletePlayer(id);
   }
 
   @override
-  Future<List<PlayerEntity>> getPlayerList() {
+  Future<Either<Exception, List<PlayerEntity>>> getPlayerList() {
     return playerRepository.getPlayerList();
   }
 
   @override
-  Future<List<PlayerEntity>> searchPlayer(String name) {
+  Future<Either<Exception, List<PlayerEntity>>> searchPlayer(String name) {
     return playerRepository.searchPlayer(name);
   }
 
   @override
-  Future<bool> updatePlayer(int id, PlayerEntity player) {
+  Future<Either<Exception, bool>> updatePlayer(int id, PlayerEntity player) {
     return playerRepository.updatePlayer(id, player);
   }
 
   @override
-  Future<bool> createRandomGeneratedPlayerList() {
+  Future<Either<Exception, bool>> createRandomGeneratedPlayerList() {
     return playerRepository.createRandomGeneratedPlayerList();
   }
 }
