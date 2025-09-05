@@ -4,6 +4,7 @@ import 'package:baseketball_league_mobile/presentation/home/home_screen.dart';
 import 'package:baseketball_league_mobile/presentation/player_feature/player_routers.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/season_routers.dart';
 import 'package:baseketball_league_mobile/presentation/splash/splash_screen.dart';
+import 'package:baseketball_league_mobile/presentation/stadium_feature/stadium_routers.dart';
 import 'package:baseketball_league_mobile/presentation/team_feature/team_routers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,6 +30,7 @@ final GoRouter router = GoRouter(
     ),
     seasonRouter,
     teamFeatureRoutes,
+    stadiumRouter,
     playerFeatureRoutes,
   ],
 );

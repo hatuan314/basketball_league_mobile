@@ -11,6 +11,10 @@ class RouterName {
   static const String teamDetail = 'team_detail';
   static const String teamEdit = 'team_edit';
 
+  /// Stadium
+  static const String stadiumList = '/stadium_list';
+  static const String stadiumEdit = 'stadium_edit';
+
   /// Player
   static const String playerList = '/player_list';
 }

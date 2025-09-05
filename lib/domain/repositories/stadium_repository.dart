@@ -1,8 +1,8 @@
 import 'package:baseketball_league_mobile/data/models/stadium_model.dart';
 import 'package:dartz/dartz.dart';
 
-/// Interface cho Stadium API
-abstract class StadiumApi {
+/// Repository cho Stadium
+abstract class StadiumRepository {
   /// Tạo bảng stadium trong database
   Future<Either<Exception, bool>> createTable();
 
@@ -20,6 +20,9 @@ abstract class StadiumApi {
 
   /// Xóa sân vận động theo ID
   Future<Either<Exception, bool>> deleteStadium(int id);
+
+  /// Tạo danh sách sân vận động ngẫu nhiên từ dữ liệu mẫu
+  Future<Either<Exception, List<StadiumModel>>> generateRandomStadiums(int count);
   
   /// Tìm kiếm sân vận động theo tên
   Future<Either<Exception, List<StadiumModel>>> searchStadiumsByName(String name);

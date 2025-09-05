@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MenuButtonWidget extends StatelessWidget {
-  final String iconPath;
+  final dynamic iconPath;
   final String title;
   final VoidCallback onTap;
   final Color? color;

@@ -66,10 +66,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                   ),
                   MenuButtonWidget(
-                    iconPath: AppImagePaths.stadium,
+                    iconPath: Icons.stadium,
                     color: AppColors.orange,
                     title: "Danh sách\nsân vận động",
-                    onTap: () {},
+                    onTap: () {
+                      context.push(RouterName.stadiumList);
+                    },
                   ),
                   MenuButtonWidget(
                     iconPath: AppImagePaths.sports_basketball_shirt_player,

@@ -4,4 +4,6 @@ extension RouteExtension on String {
   String toSeasonRoute() => '${RouterName.seasonList}/$this';
 
   String toTeamRoute() => '${RouterName.teamList}/$this';
+
+  String toStadiumRoute() => '${RouterName.stadiumList}/$this';
 }
