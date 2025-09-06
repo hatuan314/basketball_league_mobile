@@ -9,20 +9,13 @@ class AppLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            height: 100.sp,
-            width: 100.sp,
-            child: Lottie.asset(
-              AppImagePaths.basketball_loading_anm,
-              fit: BoxFit.cover,
-            ),
-          ),
-          SizedBox(height: 16.sp),
-          Text('Đang tải dữ liệu...', style: TextStyle(fontSize: 16.sp)),
-        ],
+      child: SizedBox(
+        height: 100.sp,
+        width: 100.sp,
+        child: Lottie.asset(
+          AppImagePaths.basketball_loading_anm,
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }

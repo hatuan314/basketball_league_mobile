@@ -74,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                   ),
                   MenuButtonWidget(
-                    iconPath: AppImagePaths.sports_basketball_shirt_player,
+                    iconPath: AppImagePaths.basketball_player,
                     color: AppColors.orange,
                     title: "Danh sách\ncầu thủ",
                     onTap: () {

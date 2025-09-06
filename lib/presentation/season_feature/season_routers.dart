@@ -1,5 +1,7 @@
 import 'package:baseketball_league_mobile/common/constants/router_name.dart';
 import 'package:baseketball_league_mobile/domain/entities/season_entity.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/round/round_list/bloc/round_list_cubit.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/round/round_list/round_list_screen.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/season_detail/season_detail_screen.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/season_edit/season_edit_screen.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/season_list/bloc/season_list_cubit.dart';
@@ -35,6 +37,16 @@ RouteBase seasonRouter = GoRoute(
                 seasonId: season.id!,
                 seasonName: season.name!,
               ),
+            );
+          },
+        ),
+        GoRoute(
+          path: RouterName.roundList,
+          builder: (context, state) {
+            final seasonId = state.extra as int;
+            return BlocProvider(
+              create: (context) => GetIt.instance<RoundListCubit>(),
+              child: RoundListScreen(seasonId: seasonId),
             );
           },
         ),

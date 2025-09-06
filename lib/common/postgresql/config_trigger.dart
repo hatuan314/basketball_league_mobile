@@ -69,8 +69,13 @@ class ConfigTrigger {
   /// Tạo trigger đảm bảo mã cầu thủ phản ánh thông tin về đội bóng
   Future<void> _createPlayerCodeFormatTrigger() async {
     // Xóa trigger nếu đã tồn tại
-    final dropTrigger = '''
+    String dropTrigger = '''
       DROP TRIGGER IF EXISTS enforce_player_code_format ON player;
+    ''';
+    await _conn.execute(dropTrigger);
+
+    dropTrigger = '''
+      DROP TRIGGER IF EXISTS enforce_player_code_format ON player_season;
     ''';
     await _conn.execute(dropTrigger);
 
@@ -80,37 +85,50 @@ class ConfigTrigger {
     ''';
     await _conn.execute(dropFunction);
 
-    // Tạo function cho trigger
+    // Tạo function cho trigger với cách tiếp cận đơn giản hơn
     final createFunction = '''
       CREATE OR REPLACE FUNCTION check_player_code_format()
       RETURNS TRIGGER
       LANGUAGE plpgsql
-      AS E'
+      AS '
       DECLARE
-        team_code_val TEXT;
-      BEGIN
-        -- Lấy team_code từ đội bóng mà cầu thủ tham gia
-        SELECT t.team_code INTO team_code_val
-        FROM team t
-          JOIN season_team st ON t.team_id = st.team_id
-          JOIN player_season ps ON st.season_team_id = ps.team_id
-        WHERE ps.player_id = NEW.player_id
-        LIMIT 1;
+            team_code_val TEXT;
+            player_code_val TEXT;
+            expected_prefix TEXT;
+        BEGIN
+            -- Lấy team_code từ đội bóng mà cầu thủ tham gia trong mùa giải
+            SELECT t.team_code INTO team_code_val
+            FROM team t
+                     JOIN season_team st ON t.team_id = st.team_id
+            WHERE st.season_team_id = NEW.team_id;
 
-        -- Kiểm tra xem mã cầu thủ có bắt đầu bằng mã đội không
-        IF NEW.player_code NOT LIKE (team_code_val || ''_%'') THEN
-          RAISE EXCEPTION ''Mã cầu thủ phải bắt đầu bằng mã đội bóng (%)_'', team_code_val;
-        END IF;
+            -- Lấy mã cầu thủ hiện tại
+            SELECT p.player_code INTO player_code_val
+            FROM player p
+            WHERE p.player_id = NEW.player_id;
+            
+            -- Tạo tiền tố mong muốn
+            expected_prefix := team_code_val || ''_'';
 
-        RETURN NEW;
-      END;'
+            -- Kiểm tra xem mã cầu thủ có bắt đầu bằng mã đội không
+            -- Sử dụng substring để so sánh thay vì LIKE
+            IF NOT (LEFT(player_code_val, LENGTH(expected_prefix)) = expected_prefix) THEN
+                -- Tạo mã cầu thủ mới dựa trên mã đội và ID cầu thủ
+                UPDATE player
+                SET player_code = team_code_val || ''_'' || NEW.player_id
+                WHERE player_id = NEW.player_id;
+            END IF;
+
+            RETURN NEW;
+      END;
+      '
     ''';
     await _conn.execute(createFunction);
 
     // Tạo trigger
     final createTrigger = '''
       CREATE TRIGGER enforce_player_code_format
-        BEFORE INSERT OR UPDATE ON player
+        AFTER INSERT OR UPDATE ON player_season
         FOR EACH ROW
       EXECUTE FUNCTION check_player_code_format();
     ''';

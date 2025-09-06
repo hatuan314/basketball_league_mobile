@@ -1,7 +1,7 @@
 class TeamColorEntity {
-  int? seasonTeamId;
+  int? teamId;
   int? seasonId;
   String? colorName;
 
-  TeamColorEntity({this.seasonTeamId, this.seasonId, this.colorName});
+  TeamColorEntity({this.teamId, this.seasonId, this.colorName});
 }

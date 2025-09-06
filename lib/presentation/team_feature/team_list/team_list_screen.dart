@@ -6,7 +6,7 @@ import 'package:baseketball_league_mobile/presentation/team_feature/team_list/bl
 import 'package:baseketball_league_mobile/presentation/team_feature/team_list/widget/team_item_card.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_colors.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_style.dart';
-import 'package:baseketball_league_mobile/presentation/widgets/app_loading_widget.dart';
+import 'package:baseketball_league_mobile/presentation/widgets/app_loading.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/empty_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,7 +47,7 @@ class _TeamListScreenState extends State<TeamListScreen> {
       body: BlocBuilder<TeamListCubit, TeamListState>(
         builder: (context, state) {
           if (state.status == TeamListStatus.loading) {
-            return AppLoadingWidget();
+            return AppLoading();
           } else if (state.status == TeamListStatus.failure) {
             return Center(
               child: Text(

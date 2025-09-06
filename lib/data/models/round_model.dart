@@ -15,6 +15,26 @@ class RoundModel {
     this.endDate,
   });
 
+  factory RoundModel.fromPostgres(dynamic row) {
+    return RoundModel(
+      id: row[0],
+      seasonId: row[1],
+      roundNo: row[2],
+      startDate: row[3],
+      endDate: row[4],
+    );
+  }
+
+  factory RoundModel.fromEntity(RoundEntity entity) {
+    return RoundModel(
+      id: entity.id,
+      seasonId: entity.seasonId,
+      roundNo: entity.roundNo,
+      startDate: entity.startDate,
+      endDate: entity.endDate,
+    );
+  }
+
   RoundEntity toEntity() {
     return RoundEntity(
       id: id,

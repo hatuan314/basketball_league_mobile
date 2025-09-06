@@ -1,3 +1,4 @@
+import 'package:baseketball_league_mobile/common/injection.dart';
 import 'package:baseketball_league_mobile/common/postgresql/connect_database.dart';
 import 'package:baseketball_league_mobile/data/datasources/season_team_api.dart';
 import 'package:baseketball_league_mobile/data/models/season_team_model.dart';
@@ -6,17 +7,16 @@ import 'package:dartz/dartz.dart';
 import 'package:postgres/postgres.dart';
 
 class SeasonTeamApiImpl implements SeasonTeamApi {
-  final PostgresConnection _postgresConnection;
-
-  SeasonTeamApiImpl(this._postgresConnection);
+  SeasonTeamApiImpl();
   @override
   Future<Either<Exception, SeasonTeamModel>> createSeasonTeam(
     SeasonTeamModel seasonTeam,
   ) async {
     try {
+      final postgresConnection = sl<PostgresConnection>();
       // Kiểm tra kết nối
-      if (!_postgresConnection.conn.isOpen) {
-        await _postgresConnection.connectDb();
+      if (!postgresConnection.conn.isOpen) {
+        await postgresConnection.connectDb();
       }
 
       // Câu lệnh SQL để thêm mới season_team
@@ -27,7 +27,7 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
       ''';
 
       // Thực thi câu lệnh SQL với các tham số
-      final result = await _postgresConnection.conn.execute(
+      final result = await postgresConnection.conn.execute(
         Sql.named(query),
         parameters: {
           'seasonId': seasonTeam.seasonId,
@@ -59,10 +59,11 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
   Future<Either<Exception, Unit>> deleteSeasonTeam(
     SeasonTeamModel seasonTeam,
   ) async {
+    final postgresConnection = sl<PostgresConnection>();
     try {
       // Kiểm tra kết nối
-      if (!_postgresConnection.conn.isOpen) {
-        await _postgresConnection.connectDb();
+      if (!postgresConnection.conn.isOpen) {
+        await postgresConnection.connectDb();
       }
 
       // Kiểm tra id có tồn tại
@@ -77,7 +78,7 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
       ''';
 
       // Thực thi câu lệnh SQL với các tham số
-      final result = await _postgresConnection.conn.execute(
+      final result = await postgresConnection.conn.execute(
         Sql.named(query),
         parameters: {'id': seasonTeam.id},
       );
@@ -103,10 +104,11 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
 
   @override
   Future<Either<Exception, List<SeasonTeamModel>>> getSeasonTeams() async {
+    final postgresConnection = sl<PostgresConnection>();
     try {
       // Kiểm tra kết nối
-      if (!_postgresConnection.conn.isOpen) {
-        await _postgresConnection.connectDb();
+      if (!postgresConnection.conn.isOpen) {
+        await postgresConnection.connectDb();
       }
 
       // Câu lệnh SQL để lấy danh sách season_team với thông tin chi tiết
@@ -123,7 +125,7 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
       ''';
 
       // Thực thi câu lệnh SQL
-      final result = await _postgresConnection.conn.execute(query);
+      final result = await postgresConnection.conn.execute(query);
 
       // Chuyển đổi kết quả thành danh sách model
       final seasonTeams =
@@ -143,10 +145,11 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
   Future<Either<Exception, List<TeamStandingModel>>> searchSeasonTeamByName(
     String name,
   ) async {
+    final postgresConnection = sl<PostgresConnection>();
     try {
       // Kiểm tra kết nối
-      if (!_postgresConnection.conn.isOpen) {
-        await _postgresConnection.connectDb();
+      if (!postgresConnection.conn.isOpen) {
+        await postgresConnection.connectDb();
       }
 
       // Câu lệnh SQL để tìm kiếm đội bóng theo tên và trả về bảng xếp hạng
@@ -172,7 +175,7 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
       ''';
 
       // Thực thi câu lệnh SQL với tham số tìm kiếm
-      final result = await _postgresConnection.conn.execute(
+      final result = await postgresConnection.conn.execute(
         Sql.named(query),
         parameters: {'searchTerm': '%$name%'},
       );
@@ -195,10 +198,11 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
   Future<Either<Exception, SeasonTeamModel>> updateSeasonTeam(
     SeasonTeamModel seasonTeam,
   ) async {
+    final postgresConnection = sl<PostgresConnection>();
     try {
       // Kiểm tra kết nối
-      if (!_postgresConnection.conn.isOpen) {
-        await _postgresConnection.connectDb();
+      if (!postgresConnection.conn.isOpen) {
+        await postgresConnection.connectDb();
       }
 
       // Kiểm tra id có tồn tại
@@ -215,7 +219,7 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
       ''';
 
       // Thực thi câu lệnh SQL với các tham số
-      final result = await _postgresConnection.conn.execute(
+      final result = await postgresConnection.conn.execute(
         Sql.named(query),
         parameters: {
           'id': seasonTeam.id,
@@ -254,9 +258,10 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
       return Right([]);
     }
     try {
+      final postgresConnection = sl<PostgresConnection>();
       // Kiểm tra kết nối
-      if (!_postgresConnection.conn.isOpen) {
-        await _postgresConnection.connectDb();
+      if (!postgresConnection.conn.isOpen) {
+        await postgresConnection.connectDb();
       }
 
       // Câu lệnh SQL để lấy bảng xếp hạng đội bóng
@@ -287,7 +292,7 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
       parameters = {'seasonId': seasonId};
 
       // Thực thi câu lệnh SQL
-      final result = await _postgresConnection.conn.execute(
+      final result = await postgresConnection.conn.execute(
         Sql.named(query),
         parameters: parameters,
       );

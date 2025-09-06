@@ -79,7 +79,11 @@ class PlayerCard extends StatelessWidget {
                             color: Colors.grey[600],
                           ),
                         ),
-                        SizedBox(width: 16.w),
+                      ],
+                    ),
+                    SizedBox(width: 16.w),
+                    Row(
+                      children: [
                         Icon(
                           Icons.height,
                           size: 14.sp,
@@ -93,7 +97,11 @@ class PlayerCard extends StatelessWidget {
                             color: Colors.grey[600],
                           ),
                         ),
-                        SizedBox(width: 16.w),
+                      ],
+                    ),
+                    SizedBox(width: 16.w),
+                    Row(
+                      children: [
                         Icon(
                           Icons.monitor_weight_outlined,
                           size: 14.sp,

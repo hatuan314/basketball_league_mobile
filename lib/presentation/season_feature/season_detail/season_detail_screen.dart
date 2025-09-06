@@ -50,15 +50,20 @@ class _SeasonDetailScreenState extends State<SeasonDetailScreen> {
               },
             ),
             MenuButtonWidget(
-              iconPath: AppImagePaths.stadium,
+              iconPath: AppImagePaths.season_round,
               color: AppColors.orange,
-              title: "Danh sách\nsân vận động",
-              onTap: () {},
+              title: "Danh sách\nvòng đấu",
+              onTap: () {
+                context.push(
+                  RouterName.roundList.toSeasonDetailRoute(),
+                  extra: widget.season.id,
+                );
+              },
             ),
             MenuButtonWidget(
               iconPath: AppImagePaths.sports_basketball_shirt_player,
               color: AppColors.orange,
-              title: "Danh sách\ncầu thủ",
+              title: "Danh sách\náo đấu",
               onTap: () {
                 context.push(RouterName.playerList);
               },
