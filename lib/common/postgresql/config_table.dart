@@ -103,7 +103,7 @@ class ConfigTable {
   Future<void> createPlayerSeasonTable() {
     final query = '''
                 CREATE TABLE IF NOT EXISTS player_season (
-                    player_season_id SERIAL PRIMARY KEY,
+                    player_season_id TEXT PRIMARY KEY,
                     season_team_id INT NOT NULL REFERENCES season_team(season_team_id) ON DELETE CASCADE,
                     player_id INT NOT NULL REFERENCES player(player_id) ON DELETE CASCADE,
                     shirt_number INT NOT NULL CHECK (shirt_number BETWEEN 0 AND 99),
@@ -154,7 +154,7 @@ class ConfigTable {
                 CREATE TABLE IF NOT EXISTS match_player (
                     match_player_id SERIAL PRIMARY KEY,
                     match_id INT NOT NULL REFERENCES match(match_id) ON DELETE CASCADE,
-                    player_id INT NOT NULL REFERENCES player_season(player_season_id) ON DELETE CASCADE,
+                    player_id TEXT NOT NULL REFERENCES player_season(player_season_id) ON DELETE CASCADE,
                     fouls INT DEFAULT 0 CHECK (fouls >= 0),
                     points INT DEFAULT 0 CHECK (points >= 0),
                     UNIQUE (match_id, player_id)

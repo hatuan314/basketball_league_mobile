@@ -262,4 +262,28 @@ class SeasonTeamRepositoryImpl implements SeasonTeamRepository {
       );
     }
   }
+  
+  @override
+  Future<Either<Exception, SeasonTeamEntity?>> getSeasonTeamBySeasonAndTeam({
+    required int seasonId,
+    required int teamId,
+  }) async {
+    try {
+      // Gọi API để lấy thông tin đội bóng trong một mùa giải
+      final result = await seasonTeamApi.getSeasonTeamBySeasonAndTeam(
+        seasonId: seasonId,
+        teamId: teamId,
+      );
+      
+      // Xử lý kết quả trả về
+      return result.fold(
+        (exception) => Left(exception),
+        (model) => model != null ? Right(model.toEntity()) : const Right(null),
+      );
+    } catch (e) {
+      return Left(
+        Exception('Lỗi khi lấy thông tin đội bóng trong mùa giải: ${e.toString()}'),
+      );
+    }
+  }
 }

@@ -1,7 +1,10 @@
+import 'package:baseketball_league_mobile/common/constants/router_name.dart';
+import 'package:baseketball_league_mobile/common/extentions/route_extension.dart';
 import 'package:baseketball_league_mobile/domain/entities/team_standing_entity.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 class TeamStandingItemWidget extends StatelessWidget {
   final TeamStandingEntity team;
@@ -26,53 +29,63 @@ class TeamStandingItemWidget extends StatelessWidget {
             ? Colors.brown[300]
             : Colors.black;
 
-    return Container(
-      color: backgroundColor,
-      padding: EdgeInsets.symmetric(vertical: 12.sp, horizontal: 4.sp),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 40.sp,
-            child: Text(
-              '$rank',
-              style: TextStyle(fontWeight: FontWeight.bold, color: rankColor),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              team.teamName ?? '',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          Expanded(
-            child: Text('${team.totalWins ?? 0}', textAlign: TextAlign.center),
-          ),
-          Expanded(
-            child: Text(
-              '${team.totalLosses ?? 0}',
-              textAlign: TextAlign.center,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              '${team.pointDifference ?? 0}',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color:
-                    (team.pointDifference ?? 0) > 0 ? Colors.green : Colors.red,
-                fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: () {
+        context.push(RouterName.teamDetail.toSeasonDetailRoute(), extra: team);
+      },
+      child: Container(
+        color: backgroundColor,
+        padding: EdgeInsets.symmetric(vertical: 12.sp, horizontal: 4.sp),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 40.sp,
+              child: Text(
+                '$rank',
+                style: TextStyle(fontWeight: FontWeight.bold, color: rankColor),
               ),
             ),
-          ),
-          Expanded(
-            child: Text(
-              '${team.totalPoints ?? 0}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            Expanded(
+              flex: 3,
+              child: Text(
+                team.teamName ?? '',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-          ),
-        ],
+            Expanded(
+              child: Text(
+                '${team.totalWins ?? 0}',
+                textAlign: TextAlign.center,
+              ),
+            ),
+            Expanded(
+              child: Text(
+                '${team.totalLosses ?? 0}',
+                textAlign: TextAlign.center,
+              ),
+            ),
+            Expanded(
+              child: Text(
+                '${team.pointDifference ?? 0}',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color:
+                      (team.pointDifference ?? 0) > 0
+                          ? Colors.green
+                          : Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                '${team.totalPoints ?? 0}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

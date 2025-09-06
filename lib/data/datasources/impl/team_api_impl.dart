@@ -91,4 +91,57 @@ class TeamApiImpl implements TeamApi {
       return Left(Exception('Lỗi khi cập nhật đội bóng: $e'));
     }
   }
+
+  @override
+  Future<Either<Exception, TeamModel?>> getTeamById(int teamId) async {
+    final conn = sl<PostgresConnection>().conn;
+    try {
+      // Truy vấn để lấy thông tin đội bóng dựa trên team_id
+      final query = '''
+      SELECT * 
+      FROM team
+      WHERE team_id = $teamId
+      ''';
+
+      final results = await conn.execute(query);
+      
+      // Nếu không tìm thấy kết quả, trả về null
+      if (results.isEmpty) {
+        return const Right(null);
+      }
+      
+      // Chuyển đổi kết quả thành TeamModel
+      return Right(TeamModel.fromRow(results.first));
+    } catch (e) {
+      print('Lỗi khi lấy thông tin đội bóng theo ID: $e');
+      return Left(Exception('Lỗi khi lấy thông tin đội bóng theo ID: $e'));
+    }
+  }
+  
+  // Giữ lại phương thức getTeamBySeasonTeamId để tránh lỗi ở các file đang sử dụng
+  Future<Either<Exception, TeamModel?>> getTeamBySeasonTeamId(int seasonTeamId) async {
+    final conn = sl<PostgresConnection>().conn;
+    try {
+      // Truy vấn để lấy thông tin đội bóng dựa trên season_team_id
+      final query = '''
+      SELECT t.* 
+      FROM team t
+      JOIN season_team st ON t.team_id = st.team_id
+      WHERE st.season_team_id = $seasonTeamId
+      ''';
+
+      final results = await conn.execute(query);
+      
+      // Nếu không tìm thấy kết quả, trả về null
+      if (results.isEmpty) {
+        return const Right(null);
+      }
+      
+      // Chuyển đổi kết quả thành TeamModel
+      return Right(TeamModel.fromRow(results.first));
+    } catch (e) {
+      print('Lỗi khi lấy thông tin đội bóng từ season_team_id: $e');
+      return Left(Exception('Lỗi khi lấy thông tin đội bóng từ season_team_id: $e'));
+    }
+  }
 }

@@ -1,8 +1,13 @@
 class PlayerSeasonEntity {
-  int? id;
-  int? seasonId;
+  String? id;
+  int? seasonTeamId;
   int? playerId;
   int? shirtNumber;
 
-  PlayerSeasonEntity({this.id, this.seasonId, this.playerId, this.shirtNumber});
+  PlayerSeasonEntity({
+    this.id,
+    this.seasonTeamId,
+    this.playerId,
+    this.shirtNumber,
+  });
 }

@@ -1,10 +1,10 @@
 import 'package:baseketball_league_mobile/domain/entities/player_entity.dart';
 import 'package:baseketball_league_mobile/presentation/player_feature/player_list/bloc/player_list_cubit.dart';
+import 'package:baseketball_league_mobile/presentation/widgets/empty_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import 'empty_player_list.dart';
 import 'player_card.dart';
 
 class PlayerListview extends StatefulWidget {
@@ -19,7 +19,14 @@ class _PlayerListviewState extends State<PlayerListview> {
   @override
   Widget build(BuildContext context) {
     if (widget.players.isEmpty) {
-      return EmptyPlayerList();
+      return EmptyWidget(
+        message: 'Chưa có cầu thủ nào',
+        description: 'Hãy thêm cầu thủ mới bằng nút + bên dưới',
+        buttonText: 'Tạo ngẫu nhiên',
+        onButtonPressed: () {
+          context.read<PlayerListCubit>().createRandomGeneratedPlayerList();
+        },
+      );
     }
 
     return RefreshIndicator(

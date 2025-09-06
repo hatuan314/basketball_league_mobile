@@ -1,5 +1,7 @@
 import 'package:baseketball_league_mobile/domain/entities/season_team_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/team_color_entity.dart';
 import 'package:baseketball_league_mobile/domain/entities/team_standing_entity.dart';
+import 'package:baseketball_league_mobile/domain/repositories/player_season_repository.dart';
 import 'package:baseketball_league_mobile/domain/repositories/season_team_repository.dart';
 import 'package:baseketball_league_mobile/domain/repositories/team_color_repository.dart';
 import 'package:baseketball_league_mobile/domain/usecases/season_team_usecase.dart';
@@ -9,8 +11,13 @@ import 'package:dartz/dartz.dart';
 class SeasonTeamUseCaseImpl implements SeasonTeamUseCase {
   final SeasonTeamRepository _repository;
   final TeamColorRepository _teamColorRepository;
+  final PlayerSeasonRepository _playerSeasonRepository;
 
-  SeasonTeamUseCaseImpl(this._repository, this._teamColorRepository);
+  SeasonTeamUseCaseImpl(
+    this._repository,
+    this._teamColorRepository,
+    this._playerSeasonRepository,
+  );
 
   @override
   Future<Either<Exception, SeasonTeamEntity>> createSeasonTeam(
@@ -103,15 +110,57 @@ class SeasonTeamUseCaseImpl implements SeasonTeamUseCase {
     final result = await _repository.createBulkSeasonTeams(seasonId: seasonId);
 
     return result.fold((exception) => Left(exception), (seasonTeams) async {
-      final List<int> teamIds =
-          seasonTeams.map((team) => team.teamId!).toList();
-      final teamColorResults = await _teamColorRepository
-          .generateUniqueTeamColors(seasonId: seasonId, teamIds: teamIds);
-
-      return teamColorResults.fold(
-        (exception) => Left(exception),
-        (teamColors) => Right(seasonTeams),
+      // Tạo màu áo cho các đội
+      final teamColorResults = await _createBulkTeamColors(
+        seasonId: seasonId,
+        seasonTeams: seasonTeams,
       );
+
+      return teamColorResults.fold((exception) => Left(exception), (
+        teamColors,
+      ) async {
+        return Right(seasonTeams);
+      });
     });
+  }
+
+  Future<Either<Exception, List<TeamColorEntity>>> _createBulkTeamColors({
+    required int seasonId,
+    required List<SeasonTeamEntity> seasonTeams,
+  }) async {
+    // Kiểm tra dữ liệu đầu vào
+    if (seasonId <= 0) {
+      return Left(Exception('ID mùa giải không hợp lệ'));
+    }
+
+    final List<int> teamIds = seasonTeams.map((team) => team.teamId!).toList();
+    final teamColorResults = await _teamColorRepository
+        .generateUniqueTeamColors(seasonId: seasonId, teamIds: teamIds);
+
+    return teamColorResults.fold(
+      (exception) => Left(exception),
+      (teamColors) => Right(teamColors),
+    );
+  }
+  
+  @override
+  Future<Either<Exception, SeasonTeamEntity?>> getSeasonTeamBySeasonAndTeam({
+    required int seasonId,
+    required int teamId,
+  }) async {
+    // Kiểm tra dữ liệu đầu vào
+    if (seasonId <= 0) {
+      return Left(Exception('ID mùa giải không hợp lệ'));
+    }
+    
+    if (teamId <= 0) {
+      return Left(Exception('ID đội bóng không hợp lệ'));
+    }
+    
+    // Gọi repository để lấy thông tin đội bóng trong mùa giải
+    return await _repository.getSeasonTeamBySeasonAndTeam(
+      seasonId: seasonId,
+      teamId: teamId,
+    );
   }
 }

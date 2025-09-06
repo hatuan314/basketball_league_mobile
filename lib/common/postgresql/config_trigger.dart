@@ -60,7 +60,10 @@ class ConfigTrigger {
 
   /// Kiểm tra sự tồn tại của trigger đảm bảo mã cầu thủ phản ánh thông tin về đội bóng
   Future<void> checkPlayerCodeFormat() async {
-    final exists = await _triggerExists('enforce_player_code_format', 'player');
+    final exists = await _triggerExists(
+      'enforce_player_code_format',
+      'player_season',
+    );
     if (!exists) {
       await _createPlayerCodeFormatTrigger();
     }
@@ -94,29 +97,35 @@ class ConfigTrigger {
       DECLARE
             team_code_val TEXT;
             player_code_val TEXT;
-            expected_prefix TEXT;
+            expected_format TEXT;
         BEGIN
             -- Lấy team_code từ đội bóng mà cầu thủ tham gia trong mùa giải
             SELECT t.team_code INTO team_code_val
             FROM team t
                      JOIN season_team st ON t.team_id = st.team_id
-            WHERE st.season_team_id = NEW.team_id;
+            WHERE st.season_team_id = NEW.season_team_id;
+
+            IF team_code_val IS NULL THEN
+                RAISE EXCEPTION ''Không tìm thấy mã đội cho cầu thủ'';
+            END IF;
 
             -- Lấy mã cầu thủ hiện tại
             SELECT p.player_code INTO player_code_val
             FROM player p
             WHERE p.player_id = NEW.player_id;
-            
-            -- Tạo tiền tố mong muốn
-            expected_prefix := team_code_val || ''_'';
 
-            -- Kiểm tra xem mã cầu thủ có bắt đầu bằng mã đội không
-            -- Sử dụng substring để so sánh thay vì LIKE
-            IF NOT (LEFT(player_code_val, LENGTH(expected_prefix)) = expected_prefix) THEN
-                -- Tạo mã cầu thủ mới dựa trên mã đội và ID cầu thủ
-                UPDATE player
-                SET player_code = team_code_val || ''_'' || NEW.player_id
-                WHERE player_id = NEW.player_id;
+            IF player_code_val IS NULL THEN
+                RAISE EXCEPTION ''Không tìm thấy mã cầu thủ'';
+            END IF;
+
+            -- Tạo định dạng mong đợi cho player_season_id: team_code + player_code
+            expected_format := team_code_val || player_code_val;
+
+            -- Kiểm tra xem player_season_id có đúng định dạng không
+            IF NEW.player_season_id != expected_format THEN
+                -- Cập nhật player_season_id thành định dạng đúng
+                NEW.player_season_id := expected_format;
+                RAISE EXCEPTION ''Mã cầu thủ trong mùa giải không đúng định dạng, đã cập nhật thành %'', expected_format;
             END IF;
 
             RETURN NEW;
@@ -167,7 +176,7 @@ class ConfigTrigger {
       LANGUAGE plpgsql
       AS E'
       BEGIN
-        IF (SELECT COUNT(*) FROM player_season WHERE team_id = NEW.team_id) > 20 THEN
+        IF (SELECT COUNT(*) FROM player_season WHERE season_team_id = NEW.season_team_id) > 20 THEN
           RAISE EXCEPTION ''Mỗi đội bóng chỉ được phép có tối đa 20 cầu thủ'';
         END IF;
         RETURN NEW;

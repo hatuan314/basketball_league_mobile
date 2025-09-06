@@ -308,4 +308,53 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
       );
     }
   }
+  
+  @override
+  Future<Either<Exception, SeasonTeamModel?>> getSeasonTeamBySeasonAndTeam({
+    required int seasonId,
+    required int teamId,
+  }) async {
+    try {
+      final postgresConnection = sl<PostgresConnection>();
+      // Kiểm tra kết nối
+      if (!postgresConnection.conn.isOpen) {
+        await postgresConnection.connectDb();
+      }
+      
+      // Câu lệnh SQL để lấy thông tin đội bóng trong một mùa giải
+      final query = '''
+      SELECT st.season_team_id, st.season_id, st.team_id, st.home_id,
+             s.name as season_name, s.code as season_code,
+             t.team_name, t.team_code,
+             sd.name as stadium_name
+      FROM season_team st
+      JOIN season s ON st.season_id = s.season_id
+      JOIN team t ON st.team_id = t.team_id
+      JOIN stadium sd ON st.home_id = sd.stadium_id
+      WHERE st.season_id = @seasonId AND st.team_id = @teamId
+      ''';
+      
+      // Thực thi câu lệnh SQL với các tham số
+      final result = await postgresConnection.conn.execute(
+        Sql.named(query),
+        parameters: {
+          'seasonId': seasonId,
+          'teamId': teamId,
+        },
+      );
+      
+      // Kiểm tra kết quả trả về
+      if (result.isEmpty) {
+        return const Right(null);
+      }
+      
+      // Chuyển đổi kết quả thành model
+      final seasonTeam = SeasonTeamModel.fromRow(result.first);
+      return Right(seasonTeam);
+    } catch (e) {
+      return Left(
+        Exception('Lỗi khi lấy thông tin đội bóng trong mùa giải: ${e.toString()}'),
+      );
+    }
+  }
 }

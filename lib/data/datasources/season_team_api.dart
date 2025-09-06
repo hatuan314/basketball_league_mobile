@@ -30,4 +30,15 @@ abstract class SeasonTeamApi {
   Future<Either<Exception, List<TeamStandingModel>>> getTeamStandings({
     int? seasonId,
   });
+  
+  /// Lấy thông tin đội bóng trong một mùa giải dựa trên season_id và team_id
+  /// 
+  /// [seasonId]: ID của mùa giải
+  /// [teamId]: ID của đội bóng
+  /// 
+  /// Trả về thông tin đội bóng trong mùa giải nếu thành công hoặc Exception nếu thất bại
+  Future<Either<Exception, SeasonTeamModel?>> getSeasonTeamBySeasonAndTeam({
+    required int seasonId,
+    required int teamId,
+  });
 }
