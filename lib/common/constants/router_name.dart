@@ -5,6 +5,8 @@ class RouterName {
   /// Season
   static const String seasonList = '/season_list';
   static const String seasonDetail = 'season_detail';
+  static const String seasonEdit = 'season_edit';
+  static const String teamStanding = 'team_standing';
 
   /// Team
   static const String teamList = '/team_list';

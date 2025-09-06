@@ -232,108 +232,124 @@ class ConfigView {
     final query = '''
                 CREATE OR REPLACE VIEW team_standings AS
                 WITH match_results AS (
-                    SELECT 
+                    SELECT
                         s.season_id,
                         s.name AS season_name,
                         home_st.team_id,
                         home_team.team_name,
                         m.match_id,
-                        CASE 
+                        CASE
                             WHEN m.home_points > m.away_points THEN 2 -- Thắng 2 điểm
                             ELSE 0 -- Thua 0 điểm
-                        END AS points,
-                        CASE 
+                            END AS points,
+                        CASE
                             WHEN m.home_points > m.away_points THEN 1
                             ELSE 0
-                        END AS wins,
-                        CASE 
+                            END AS wins,
+                        CASE
                             WHEN m.home_points > m.away_points THEN 0
                             ELSE 1
-                        END AS losses,
-                        CASE 
+                            END AS losses,
+                        CASE
                             WHEN m.home_points > m.away_points THEN 1
                             ELSE 0
-                        END AS home_wins,
-                        CASE 
+                            END AS home_wins,
+                        CASE
                             WHEN m.home_points > m.away_points THEN 0
                             ELSE 0
-                        END AS away_wins,
+                            END AS away_wins,
                         m.home_points AS points_scored,
                         m.away_points AS points_conceded,
                         m.home_fouls AS fouls
-                    FROM 
+                    FROM
                         match m
-                    JOIN 
+                            JOIN
                         round r ON m.round_id = r.round_id
-                    JOIN 
+                            JOIN
                         season s ON r.season_id = s.season_id
-                    JOIN 
+                            JOIN
                         season_team home_st ON m.home_team_id = home_st.season_team_id
-                    JOIN 
+                            JOIN
                         team home_team ON home_st.team_id = home_team.team_id
-                    
+
                     UNION ALL
-                    
-                    SELECT 
+
+                    SELECT
                         s.season_id,
                         s.name AS season_name,
                         away_st.team_id,
                         away_team.team_name,
                         m.match_id,
-                        CASE 
+                        CASE
                             WHEN m.away_points > m.home_points THEN 2 -- Thắng 2 điểm
                             ELSE 0 -- Thua 0 điểm
-                        END AS points,
-                        CASE 
+                            END AS points,
+                        CASE
                             WHEN m.away_points > m.home_points THEN 1
                             ELSE 0
-                        END AS wins,
-                        CASE 
+                            END AS wins,
+                        CASE
                             WHEN m.away_points > m.home_points THEN 0
                             ELSE 1
-                        END AS losses,
-                        CASE 
+                            END AS losses,
+                        CASE
                             WHEN m.away_points > m.home_points THEN 0
                             ELSE 0
-                        END AS home_wins,
-                        CASE 
+                            END AS home_wins,
+                        CASE
                             WHEN m.away_points > m.home_points THEN 1
                             ELSE 0
-                        END AS away_wins,
+                            END AS away_wins,
                         m.away_points AS points_scored,
                         m.home_points AS points_conceded,
                         m.away_fouls AS fouls
-                    FROM 
+                    FROM
                         match m
-                    JOIN 
+                            JOIN
                         round r ON m.round_id = r.round_id
-                    JOIN 
+                            JOIN
                         season s ON r.season_id = s.season_id
-                    JOIN 
+                            JOIN
                         season_team away_st ON m.away_team_id = away_st.season_team_id
-                    JOIN 
+                            JOIN
                         team away_team ON away_st.team_id = away_team.team_id
-                )
-                SELECT 
-                    season_id,
-                    season_name,
-                    team_id,
-                    team_name,
-                    SUM(points) AS total_points,
-                    SUM(wins) AS total_wins,
-                    SUM(losses) AS total_losses,
-                    SUM(points_scored) AS total_points_scored,
-                    SUM(points_conceded) AS total_points_conceded,
-                    SUM(points_scored) - SUM(points_conceded) AS point_difference,
-                    SUM(home_wins) AS home_wins,
-                    SUM(away_wins) AS away_wins,
-                    SUM(fouls) AS total_fouls
-                FROM 
-                    match_results
-                GROUP BY 
-                    season_id, season_name, team_id, team_name
-                ORDER BY 
-                    season_id,
+                ),
+                    all_teams AS (
+                        -- Lấy tất cả các đội trong tất cả các mùa giải
+                        SELECT
+                            s.season_id,
+                            s.name AS season_name,
+                            t.team_id,
+                            t.team_name
+                        FROM
+                            season s
+                                JOIN
+                            season_team st ON s.season_id = st.season_id
+                                JOIN
+                            team t ON st.team_id = t.team_id
+                    )
+                SELECT
+                    at.season_id,
+                    at.season_name,
+                    at.team_id,
+                    at.team_name,
+                    COALESCE(SUM(mr.points), 0) AS total_points,
+                    COALESCE(SUM(mr.wins), 0) AS total_wins,
+                    COALESCE(SUM(mr.losses), 0) AS total_losses,
+                    COALESCE(SUM(mr.points_scored), 0) AS total_points_scored,
+                    COALESCE(SUM(mr.points_conceded), 0) AS total_points_conceded,
+                    COALESCE(SUM(mr.points_scored) - SUM(mr.points_conceded), 0) AS point_difference,
+                    COALESCE(SUM(mr.home_wins), 0) AS home_wins,
+                    COALESCE(SUM(mr.away_wins), 0) AS away_wins,
+                    COALESCE(SUM(mr.fouls), 0) AS total_fouls
+                FROM
+                    all_teams at
+                        LEFT JOIN
+                    match_results mr ON at.season_id = mr.season_id AND at.team_id = mr.team_id
+                GROUP BY
+                    at.season_id, at.season_name, at.team_id, at.team_name
+                ORDER BY
+                    at.season_id,
                     total_points DESC,
                     point_difference DESC,
                     total_points_scored DESC,

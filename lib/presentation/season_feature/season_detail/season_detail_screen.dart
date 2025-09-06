@@ -1,5 +1,6 @@
 import 'package:baseketball_league_mobile/common/assets/image_paths.dart';
 import 'package:baseketball_league_mobile/common/constants/router_name.dart';
+import 'package:baseketball_league_mobile/common/extentions/route_extension.dart';
 import 'package:baseketball_league_mobile/domain/entities/season_entity.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_color.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_style.dart';
@@ -38,9 +39,15 @@ class _SeasonDetailScreenState extends State<SeasonDetailScreen> {
           ),
           children: [
             MenuButtonWidget(
-              iconPath: AppImagePaths.basketball_team,
-              title: "Danh sách\nđội bóng",
-              onTap: () {},
+              iconPath: AppImagePaths.chart_bar,
+              color: AppColors.orange,
+              title: "Bảng\nxếp hạng",
+              onTap: () {
+                context.push(
+                  RouterName.teamStanding.toSeasonDetailRoute(),
+                  extra: widget.season,
+                );
+              },
             ),
             MenuButtonWidget(
               iconPath: AppImagePaths.stadium,

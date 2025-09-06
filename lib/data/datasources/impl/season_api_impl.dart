@@ -82,7 +82,15 @@ class SeasonApiImpl implements SeasonApi {
   Future<Either<Exception, List<SeasonModel>>> searchSeason(String name) async {
     final conn = sl<PostgresConnection>().conn;
     try {
-      final query = '''SELECT * FROM season WHERE name ILIKE '%$name%' ''';
+      // Đảm bảo extension unaccent được cài đặt
+      await conn.execute('CREATE EXTENSION IF NOT EXISTS unaccent');
+      
+      // Sử dụng unaccent để tìm kiếm không phân biệt dấu
+      final query = '''
+        SELECT * FROM season 
+        WHERE unaccent(LOWER(name)) LIKE unaccent(LOWER('%$name%'))
+      ''';
+      
       final results = await conn.execute(query);
       return Right(results.map((row) => _seasonFromRow(row)).toList());
     } catch (e) {

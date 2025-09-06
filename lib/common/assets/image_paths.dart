@@ -2,6 +2,7 @@ class AppImagePaths {
   /// Icons
   static const String basketball_season = 'assets/icons/basketball_season.svg';
   static const String basketball_team = 'assets/icons/basketball_team.svg';
+  static const String chart_bar = 'assets/icons/chart_bar.svg';
   static const String referee = 'assets/icons/referee.svg';
   static const String stadium = 'assets/icons/stadium.svg';
   static const String sports_basketball_shirt_player =
