@@ -96,7 +96,11 @@ class MatchApiImpl implements MatchApi {
       }
 
       // Lấy thông tin về vòng đấu
-      final roundSql = 'SELECT season_id FROM round WHERE round_id = @roundId';
+      final roundSql = '''
+      SELECT r.season_id, r.round_no, r.start_date, r.end_date 
+      FROM round r 
+      WHERE r.round_id = @roundId
+      ''';
       final roundParams = {'roundId': roundId};
       final roundResult = await conn.execute(
         Sql.named(roundSql),
@@ -108,14 +112,16 @@ class MatchApiImpl implements MatchApi {
       }
 
       final seasonId = roundResult[0][0] as int;
+      final roundNo = roundResult[0][1] as int;
+      final startDate = roundResult[0][2] as DateTime;
+      final endDate = roundResult[0][3] as DateTime;
 
       // Lấy danh sách đội trong mùa giải
       final teamsSql = '''
-      SELECT st.season_team_id,
-            tc.color_name
+      SELECT st.season_team_id, t.team_id, t.team_name, tc.color_name
       FROM season_team st
       JOIN team t ON st.team_id = t.team_id
-              JOIN team_color tc ON st.season_id = tc.season_id AND st.team_id = tc.team_id
+      JOIN team_color tc ON st.season_id = tc.season_id AND st.team_id = tc.team_id
       WHERE st.season_id = @seasonId
       ''';
 
@@ -129,17 +135,22 @@ class MatchApiImpl implements MatchApi {
         return Left(Exception('Không có đội nào trong mùa giải'));
       }
 
-      // Tạo map để gộp các team có cùng teamId
+      // Tạo map để gộp các team có cùng seasonTeamId
       final teamMap = <int, Map<String, dynamic>>{};
 
       for (final row in teamsResult) {
         final seasonTeamId = row[0] as int;
-        // Biến teamId có thể được sử dụng trong tương lai nếu cần phân biệt các đội
-        // final teamId = row[1] as int;
-        final colorName = row[1] as String;
+        final teamId = row[1] as int;
+        final teamName = row[2] as String;
+        final colorName = row[3] as String;
 
         if (!teamMap.containsKey(seasonTeamId)) {
-          teamMap[seasonTeamId] = {'id': seasonTeamId, 'colors': <String>[]};
+          teamMap[seasonTeamId] = {
+            'seasonTeamId': seasonTeamId,
+            'teamId': teamId,
+            'teamName': teamName,
+            'colors': <String>[],
+          };
         }
 
         // Thêm màu vào danh sách màu của team
@@ -152,71 +163,146 @@ class MatchApiImpl implements MatchApi {
       // Chuyển map thành list
       final teams = teamMap.values.toList();
 
-      // Lấy thông tin về thời gian của vòng đấu
-      final roundDateSql =
-          'SELECT start_date, end_date FROM round WHERE round_id = @roundId';
-      final roundDateParams = {'roundId': roundId};
-      final roundDateResult = await conn.execute(
-        Sql.named(roundDateSql),
-        parameters: roundDateParams,
+      // Kiểm tra số lượng đội
+      if (teams.length < 2) {
+        return Left(Exception('Cần ít nhất 2 đội để tạo trận đấu'));
+      }
+
+      // Lấy thông tin về các trận đấu đã tạo trong mùa giải
+      final existingMatchesSql = '''
+      SELECT m.home_team_id, m.away_team_id
+      FROM match m
+      JOIN round r ON m.round_id = r.round_id
+      WHERE r.season_id = @seasonId
+      ''';
+
+      final existingMatchesParams = {'seasonId': seasonId};
+      final existingMatchesResult = await conn.execute(
+        Sql.named(existingMatchesSql),
+        parameters: existingMatchesParams,
       );
 
-      final startDate = roundDateResult[0][0] as DateTime;
-      final endDate = roundDateResult[0][1] as DateTime;
+      // Tạo map để đếm số trận đã đấu giữa các cặp đội
+      final matchCountMap = <String, int>{};
+
+      for (final row in existingMatchesResult) {
+        final homeTeamId = row[0] as int;
+        final awayTeamId = row[1] as int;
+
+        // Tạo key cho cặp đội (không phân biệt sân nhà/sân khách)
+        final key1 = '$homeTeamId-$awayTeamId';
+        final key2 = '$awayTeamId-$homeTeamId';
+
+        if (matchCountMap.containsKey(key1)) {
+          matchCountMap[key1] = matchCountMap[key1]! + 1;
+        } else if (matchCountMap.containsKey(key2)) {
+          matchCountMap[key2] = matchCountMap[key2]! + 1;
+        } else {
+          matchCountMap[key1] = 1;
+        }
+      }
+
+      // Kiểm tra các đội đã thi đấu trong vòng đấu hiện tại
+      final teamsInCurrentRoundSql = '''
+      SELECT m.home_team_id, m.away_team_id
+      FROM match m
+      WHERE m.round_id = @roundId
+      ''';
+
+      final teamsInCurrentRoundParams = {'roundId': roundId};
+      final teamsInCurrentRoundResult = await conn.execute(
+        Sql.named(teamsInCurrentRoundSql),
+        parameters: teamsInCurrentRoundParams,
+      );
+
+      // Tạo set để lưu các đội đã thi đấu trong vòng đấu hiện tại
+      final teamsInCurrentRound = <int>{};
+
+      for (final row in teamsInCurrentRoundResult) {
+        teamsInCurrentRound.add(row[0] as int);
+        teamsInCurrentRound.add(row[1] as int);
+      }
 
       // Tạo các trận đấu
       final matches = <MatchModel>[];
       final createdMatches = <MatchModel>[];
 
-      // Tạo các cặp đấu (mỗi đội sẽ đấu với tất cả các đội khác)
-      for (int i = 0; i < teams.length; i++) {
-        for (int j = i + 1; j < teams.length; j++) {
-          final homeTeam = teams[i];
-          final awayTeam = teams[j];
+      // Danh sách các đội chưa thi đấu trong vòng đấu hiện tại
+      final availableTeams =
+          teams
+              .where(
+                (team) => !teamsInCurrentRound.contains(team['seasonTeamId']),
+              )
+              .toList();
 
-          // Tính toán thời gian trận đấu (phân bố đều trong khoảng thời gian của vòng đấu)
-          final matchDate = startDate.add(
-            Duration(
-              hours:
-                  ((i * teams.length + j) *
-                          (endDate.difference(startDate).inHours /
-                              (teams.length * (teams.length - 1) / 2)))
-                      .round(),
-            ),
-          );
+      // Sắp xếp ngẫu nhiên để tạo các cặp đấu
+      availableTeams.shuffle(Random());
 
-          // Lấy ngẫu nhiên một màu từ danh sách màu của mỗi đội
-          final homeColors = homeTeam['colors'] as List<String>;
-          final awayColors = awayTeam['colors'] as List<String>;
+      // Tạo các cặp đấu cho vòng đấu hiện tại
+      for (int i = 0; i < availableTeams.length - 1; i += 2) {
+        if (i + 1 >= availableTeams.length) break;
 
-          // Đảm bảo màu của hai đội không trùng nhau
-          String homeColor = homeColors[0];
-          String awayColor = awayColors[0];
+        final homeTeam = availableTeams[i];
+        final awayTeam = availableTeams[i + 1];
 
-          if (awayColors.length > 1) {
-            // Tìm màu khác cho đội khách nếu trùng với đội nhà
-            do {
-              int index = Random().nextInt(awayColors.length - 1);
-              awayColor = awayColors[index];
-            } while (awayColor == homeColor);
+        final homeTeamId = homeTeam['seasonTeamId'] as int;
+        final awayTeamId = awayTeam['seasonTeamId'] as int;
+
+        // Kiểm tra số trận đã đấu giữa hai đội
+        final key1 = '$homeTeamId-$awayTeamId';
+        final key2 = '$awayTeamId-$homeTeamId';
+        final matchCount = matchCountMap[key1] ?? matchCountMap[key2] ?? 0;
+
+        // Nếu đã đấu đủ 4 trận, bỏ qua cặp đấu này
+        if (matchCount >= 4) continue;
+
+        // Tính toán thời gian trận đấu (phân bố đều trong khoảng thời gian của vòng đấu)
+        final matchDate = startDate.add(
+          Duration(
+            hours:
+                (i /
+                        2 *
+                        (endDate.difference(startDate).inHours /
+                            (availableTeams.length / 2)))
+                    .round(),
+          ),
+        );
+
+        // Lấy ngẫu nhiên một màu từ danh sách màu của mỗi đội
+        final homeColors = homeTeam['colors'] as List<String>;
+        final awayColors = awayTeam['colors'] as List<String>;
+
+        // Đảm bảo màu của hai đội không trùng nhau
+        String homeColor = homeColors.isNotEmpty ? homeColors[0] : 'white';
+        String awayColor = awayColors.isNotEmpty ? awayColors[0] : 'black';
+
+        if (homeColors.isNotEmpty &&
+            awayColors.length > 1 &&
+            homeColor == awayColor) {
+          // Tìm màu khác cho đội khách nếu trùng với đội nhà
+          for (final color in awayColors) {
+            if (color != homeColor) {
+              awayColor = color;
+              break;
+            }
           }
-
-          final match = MatchModel(
-            roundId: roundId,
-            matchDate: matchDate,
-            homeTeamId: homeTeam['id'],
-            awayTeamId: awayTeam['id'],
-            homeColor: homeColor,
-            awayColor: awayColor,
-            attendance: 0,
-            homePoints: 0,
-            awayPoints: 0,
-            homeFouls: 0,
-            awayFouls: 0,
-          );
-
-          matches.add(match);
         }
+
+        final match = MatchModel(
+          roundId: roundId,
+          matchDate: matchDate,
+          homeTeamId: homeTeamId,
+          awayTeamId: awayTeamId,
+          homeColor: homeColor,
+          awayColor: awayColor,
+          attendance: 0,
+          homePoints: 0,
+          awayPoints: 0,
+          homeFouls: 0,
+          awayFouls: 0,
+        );
+
+        matches.add(match);
       }
 
       // Lưu các trận đấu vào database

@@ -1,4 +1,7 @@
+import 'package:baseketball_league_mobile/common/app_utils.dart';
 import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/match_referee_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/usecases/match_referee_usecase.dart';
 import 'package:baseketball_league_mobile/domain/usecases/match_usecase.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/bloc/match_detail_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,11 +10,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class MatchDetailCubit extends Cubit<MatchDetailState> {
   /// UseCase để quản lý trận đấu
   final MatchUseCase _matchUseCase;
+  final MatchRefereeUseCase _matchRefereeUseCase;
 
   /// Constructor
-  MatchDetailCubit({required MatchUseCase matchUseCase})
-    : _matchUseCase = matchUseCase,
-      super(MatchDetailState.initial());
+  MatchDetailCubit({
+    required MatchUseCase matchUseCase,
+    required MatchRefereeUseCase matchRefereeUseCase,
+  }) : _matchUseCase = matchUseCase,
+       _matchRefereeUseCase = matchRefereeUseCase,
+       super(MatchDetailState.loading());
 
   /// Thiết lập thông tin ban đầu và tải dữ liệu
   void initial({required int matchId, required int roundId}) async {
@@ -22,43 +29,43 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
         status: MatchDetailStatus.loading,
       ),
     );
-
-    await _loadMatchDetail();
+    final results = await Future.wait([
+      _loadMatchDetail(matchId, roundId),
+      _loadMatchReferees(matchId),
+    ]);
+    if (!AppUtils.isNullEmptyList(results) &&
+        results[0] != null &&
+        results[1] != null) {
+      emit(
+        state.copyWith(
+          match: results[0] as MatchDetailEntity,
+          referees: results[1] as List<MatchRefereeDetailEntity>,
+          status: MatchDetailStatus.initial,
+        ),
+      );
+    }
   }
 
   /// Tải thông tin chi tiết của trận đấu
-  Future<void> _loadMatchDetail() async {
-    if (state.matchId == null || state.roundId == null) return;
-
+  Future<MatchDetailEntity?> _loadMatchDetail(int matchId, int roundId) async {
     try {
       final result = await _matchUseCase.getMatchDetailByRoundId(
-        state.roundId!,
+        roundId,
         matchId: state.matchId,
       );
 
-      result.fold(
-        (error) => emit(
-          state.copyWith(
-            status: MatchDetailStatus.failure,
-            errorMessage: error.toString(),
-          ),
-        ),
+      return result.fold(
+        (error) {
+          emit(
+            state.copyWith(
+              status: MatchDetailStatus.failure,
+              errorMessage: error.toString(),
+            ),
+          );
+          return null;
+        },
         (matches) {
-          if (matches.isEmpty) {
-            emit(
-              state.copyWith(
-                status: MatchDetailStatus.failure,
-                errorMessage: 'Không tìm thấy thông tin trận đấu',
-              ),
-            );
-          } else {
-            emit(
-              state.copyWith(
-                match: matches.first,
-                status: MatchDetailStatus.success,
-              ),
-            );
-          }
+          return matches.first;
         },
       );
     } catch (e) {
@@ -149,6 +156,127 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
   /// Tải lại thông tin trận đấu
   Future<void> refreshMatchDetail() async {
     emit(state.copyWith(status: MatchDetailStatus.loading));
-    await _loadMatchDetail();
+    await _loadMatchDetail(state.matchId!, state.roundId!);
+    await _loadMatchReferees(state.matchId!);
+  }
+
+  /// Tải danh sách trọng tài của trận đấu
+  Future<List<MatchRefereeDetailEntity>?> _loadMatchReferees(
+    int matchId,
+  ) async {
+    try {
+      final result = await _matchRefereeUseCase.getMatchRefereeDetailsByMatchId(
+        matchId,
+      );
+
+      return result.fold(
+        (error) {
+          emit(
+            state.copyWith(
+              status: MatchDetailStatus.failure,
+              errorMessage: error.toString(),
+            ),
+          );
+          return null;
+        },
+        (referees) {
+          return referees;
+        },
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: MatchDetailStatus.failure,
+          errorMessage: e.toString(),
+        ),
+      );
+      return null;
+    }
+  }
+
+  /// Tự động phân công trọng tài cho trận đấu
+  Future<void> generateMatchReferees({
+    required int roundId,
+    required int matchId,
+  }) async {
+    emit(state.copyWith(status: MatchDetailStatus.updating));
+
+    try {
+      final result = await _matchRefereeUseCase.generateMatchReferees(
+        roundId: roundId,
+        matchId: matchId,
+      );
+      result.fold(
+        (error) => emit(
+          state.copyWith(
+            status: MatchDetailStatus.updateFailure,
+            errorMessage: 'Lỗi khi phân công trọng tài: ${error.toString()}',
+          ),
+        ),
+        (matchReferees) async {
+          if (matchReferees.length < 4) {
+            emit(
+              state.copyWith(
+                status: MatchDetailStatus.updateFailure,
+                errorMessage: 'Không đủ trọng tài để phân công trận đấu',
+              ),
+            );
+            return;
+          }
+          // Tải lại danh sách trọng tài
+          await _loadMatchReferees(matchId);
+
+          emit(state.copyWith(status: MatchDetailStatus.updateSuccess));
+
+          // Sau 2 giây, đặt lại trạng thái về success
+          Future.delayed(const Duration(seconds: 2), () {
+            emit(state.copyWith(status: MatchDetailStatus.success));
+          });
+        },
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: MatchDetailStatus.updateFailure,
+          errorMessage: 'Lỗi khi phân công trọng tài: $e',
+        ),
+      );
+    }
+  }
+
+  /// Xóa trọng tài khỏi trận đấu
+  Future<void> deleteMatchReferee(String id) async {
+    emit(state.copyWith(status: MatchDetailStatus.updating));
+
+    try {
+      final result = await _matchRefereeUseCase.deleteMatchReferee(id);
+
+      result.fold(
+        (error) => emit(
+          state.copyWith(
+            status: MatchDetailStatus.updateFailure,
+            errorMessage: 'Lỗi khi xóa trọng tài: ${error.toString()}',
+          ),
+        ),
+        (success) async {
+          // Tải lại danh sách trọng tài
+          await _loadMatchReferees(state.matchId!);
+
+          emit(state.copyWith(status: MatchDetailStatus.updateSuccess));
+
+          // Sau 2 giây, đặt lại trạng thái về success
+          Future.delayed(const Duration(seconds: 2), () {
+            emit(state.copyWith(status: MatchDetailStatus.success));
+          });
+        },
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: MatchDetailStatus.updateFailure,
+          errorMessage: 'Lỗi khi xóa trọng tài: $e',
+        ),
+      );
+    }
   }
 }

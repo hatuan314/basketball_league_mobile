@@ -1,21 +1,24 @@
 enum RefereeType {
   main,
-  assistant,
   table,
   unknown;
 
   static RefereeType fromString(String name) {
     if (name.toLowerCase() == 'main') return main;
-    if (name.toLowerCase() == 'assistant') return assistant;
     if (name.toLowerCase() == 'table') return table;
     return unknown;
   }
 
-  String toString() {
+  String toCode() {
     if (this == main) return 'MAIN';
-    if (this == assistant) return 'ASSISTANT';
     if (this == table) return 'TABLE';
     return 'UNKNOWN';
+  }
+
+  String toText() {
+    if (this == main) return 'Trọng tài chính';
+    if (this == table) return 'Trọng tài bàn';
+    return 'Không xác định';
   }
 }
 

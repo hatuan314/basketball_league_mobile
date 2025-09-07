@@ -565,8 +565,8 @@ class ConfigTrigger {
           RAISE EXCEPTION ''Mỗi trận đấu chỉ được có tối đa 4 trọng tài'';
         END IF;
 
-        IF main_ref_count > 1 THEN
-          RAISE EXCEPTION ''Mỗi trận đấu chỉ được có 1 trọng tài chính'';
+        IF main_ref_count > 3 THEN
+          RAISE EXCEPTION ''Mỗi trận đấu chỉ được có tối đa 3 trọng tài chính'';
         END IF;
 
         IF assistant_ref_count > 2 THEN

@@ -1,12 +1,14 @@
-import 'package:baseketball_league_mobile/common/widgets/app_loading.dart';
-import 'package:baseketball_league_mobile/common/widgets/empty_widget.dart';
 import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/match_referee_detail_entity.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/bloc/match_detail_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/bloc/match_detail_state.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/widgets/match_info_card.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/widgets/match_referee_card.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/widgets/match_score_card.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/widgets/match_stadium_card.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_style.dart';
+import 'package:baseketball_league_mobile/presentation/widgets/app_loading.dart';
+import 'package:baseketball_league_mobile/presentation/widgets/empty_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -89,13 +91,17 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
             );
           }
 
-          return _buildMatchDetail(context, state.match!);
+          return _buildMatchDetail(context, state.match!, state.referees);
         },
       ),
     );
   }
 
-  Widget _buildMatchDetail(BuildContext context, MatchDetailEntity match) {
+  Widget _buildMatchDetail(
+    BuildContext context,
+    MatchDetailEntity match,
+    List<MatchRefereeDetailEntity>? referees,
+  ) {
     return RefreshIndicator(
       onRefresh: () async {
         await context.read<MatchDetailCubit>().refreshMatchDetail();
@@ -133,6 +139,10 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
 
             // Thông tin về sân vận động
             MatchStadiumCard(match: match),
+            SizedBox(height: 16.sp),
+
+            // Thông tin về trọng tài
+            MatchRefereeCard(match: match, referees: referees),
           ],
         ),
       ),
