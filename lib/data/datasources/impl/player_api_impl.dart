@@ -72,7 +72,10 @@ class PlayerApiImpl implements PlayerApi {
   }
 
   @override
-  Future<Either<Exception, bool>> updatePlayer(int id, PlayerModel player) async {
+  Future<Either<Exception, bool>> updatePlayer(
+    int id,
+    PlayerModel player,
+  ) async {
     final conn = sl<PostgresConnection>().conn;
     try {
       final query = '''
@@ -93,19 +96,19 @@ class PlayerApiImpl implements PlayerApi {
       return Left(Exception('Lỗi khi cập nhật cầu thủ: $e'));
     }
   }
-  
+
   @override
   Future<Either<Exception, PlayerModel?>> getPlayerById(int playerId) async {
     final conn = sl<PostgresConnection>().conn;
     try {
       final query = '''SELECT * FROM player WHERE player_id = $playerId''';
       final results = await conn.execute(query);
-      
+
       // Nếu không tìm thấy cầu thủ, trả về null
       if (results.isEmpty) {
         return const Right(null);
       }
-      
+
       // Chuyển đổi kết quả thành PlayerModel
       return Right(PlayerModel.fromRow(results.first));
     } catch (e) {

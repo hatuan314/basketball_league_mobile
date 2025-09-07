@@ -9,11 +9,8 @@ class StadiumFormScreen extends StatefulWidget {
   final StadiumModel? stadium;
   final bool isEditing;
 
-  const StadiumFormScreen({
-    Key? key,
-    this.stadium,
-    this.isEditing = false,
-  }) : super(key: key);
+  const StadiumFormScreen({Key? key, this.stadium, this.isEditing = false})
+    : super(key: key);
 
   @override
   State<StadiumFormScreen> createState() => _StadiumFormScreenState();
@@ -36,7 +33,8 @@ class _StadiumFormScreenState extends State<StadiumFormScreen> {
       _nameController.text = widget.stadium!.name ?? '';
       _addressController.text = widget.stadium!.address ?? '';
       _capacityController.text = widget.stadium!.capacity?.toString() ?? '';
-      _ticketPriceController.text = widget.stadium!.ticketPrice?.toString() ?? '';
+      _ticketPriceController.text =
+          widget.stadium!.ticketPrice?.toString() ?? '';
     }
   }
 
@@ -61,13 +59,14 @@ class _StadiumFormScreenState extends State<StadiumFormScreen> {
       name: _nameController.text,
       address: _addressController.text,
       capacity: int.tryParse(_capacityController.text),
-      ticketPrice: int.tryParse(_ticketPriceController.text),
+      ticketPrice: double.tryParse(_ticketPriceController.text),
     );
 
     try {
-      final result = widget.isEditing
-          ? await _stadiumUseCase.updateStadium(stadium)
-          : await _stadiumUseCase.createStadium(stadium);
+      final result =
+          widget.isEditing
+              ? await _stadiumUseCase.updateStadium(stadium)
+              : await _stadiumUseCase.createStadium(stadium);
 
       result.fold(
         (exception) {
@@ -84,9 +83,11 @@ class _StadiumFormScreenState extends State<StadiumFormScreen> {
         (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(widget.isEditing
-                  ? 'Cập nhật sân vận động thành công!'
-                  : 'Tạo sân vận động thành công!'),
+              content: Text(
+                widget.isEditing
+                    ? 'Cập nhật sân vận động thành công!'
+                    : 'Tạo sân vận động thành công!',
+              ),
               backgroundColor: Colors.green,
             ),
           );
@@ -110,93 +111,100 @@ class _StadiumFormScreenState extends State<StadiumFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isEditing ? 'Chỉnh sửa sân vận động' : 'Tạo sân vận động mới'),
+        title: Text(
+          widget.isEditing ? 'Chỉnh sửa sân vận động' : 'Tạo sân vận động mới',
+        ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.all(16.r),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildTextField(
-                        controller: _nameController,
-                        label: 'Tên sân vận động',
-                        hint: 'Nhập tên sân vận động',
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Vui lòng nhập tên sân vận động';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 16.r),
-                      _buildTextField(
-                        controller: _addressController,
-                        label: 'Địa chỉ',
-                        hint: 'Nhập địa chỉ sân vận động',
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Vui lòng nhập địa chỉ sân vận động';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 16.r),
-                      _buildTextField(
-                        controller: _capacityController,
-                        label: 'Sức chứa',
-                        hint: 'Nhập sức chứa sân vận động',
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Vui lòng nhập sức chứa sân vận động';
-                          }
-                          final capacity = int.tryParse(value);
-                          if (capacity == null || capacity <= 0) {
-                            return 'Sức chứa phải là số dương';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 16.r),
-                      _buildTextField(
-                        controller: _ticketPriceController,
-                        label: 'Giá vé (VNĐ)',
-                        hint: 'Nhập giá vé',
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Vui lòng nhập giá vé';
-                          }
-                          final price = int.tryParse(value);
-                          if (price == null || price < 0) {
-                            return 'Giá vé không được âm';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 32.r),
-                      ElevatedButton(
-                        onPressed: _saveStadium,
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 16.r),
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.all(16.r),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildTextField(
+                          controller: _nameController,
+                          label: 'Tên sân vận động',
+                          hint: 'Nhập tên sân vận động',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Vui lòng nhập tên sân vận động';
+                            }
+                            return null;
+                          },
                         ),
-                        child: Text(
-                          widget.isEditing ? 'Cập nhật' : 'Tạo mới',
-                          style: TextStyle(fontSize: 16.sp),
+                        SizedBox(height: 16.r),
+                        _buildTextField(
+                          controller: _addressController,
+                          label: 'Địa chỉ',
+                          hint: 'Nhập địa chỉ sân vận động',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Vui lòng nhập địa chỉ sân vận động';
+                            }
+                            return null;
+                          },
                         ),
-                      ),
-                    ],
+                        SizedBox(height: 16.r),
+                        _buildTextField(
+                          controller: _capacityController,
+                          label: 'Sức chứa',
+                          hint: 'Nhập sức chứa sân vận động',
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Vui lòng nhập sức chứa sân vận động';
+                            }
+                            final capacity = int.tryParse(value);
+                            if (capacity == null || capacity <= 0) {
+                              return 'Sức chứa phải là số dương';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 16.r),
+                        _buildTextField(
+                          controller: _ticketPriceController,
+                          label: 'Giá vé (VNĐ)',
+                          hint: 'Nhập giá vé',
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Vui lòng nhập giá vé';
+                            }
+                            final price = int.tryParse(value);
+                            if (price == null || price < 0) {
+                              return 'Giá vé không được âm';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 32.r),
+                        ElevatedButton(
+                          onPressed: _saveStadium,
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 16.r),
+                          ),
+                          child: Text(
+                            widget.isEditing ? 'Cập nhật' : 'Tạo mới',
+                            style: TextStyle(fontSize: 16.sp),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
     );
   }
 
@@ -213,9 +221,7 @@ class _StadiumFormScreenState extends State<StadiumFormScreen> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.r),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
         contentPadding: EdgeInsets.symmetric(horizontal: 16.r, vertical: 16.r),
       ),
       keyboardType: keyboardType,

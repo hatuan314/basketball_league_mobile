@@ -6,7 +6,15 @@ extension RouteExtension on String {
   String toSeasonDetailRoute() =>
       '${RouterName.seasonDetail.toSeasonRoute()}/$this';
 
+  String toRoundRoute() =>
+      '${RouterName.roundList.toSeasonDetailRoute()}/$this';
+
+  String toRoundDetailRoute() =>
+      '${RouterName.roundDetail.toRoundRoute()}/$this';
+
   String toTeamRoute() => '${RouterName.teamList}/$this';
 
   String toStadiumRoute() => '${RouterName.stadiumList}/$this';
+
+  String toRefereeRoute() => '${RouterName.refereeList}/$this';
 }

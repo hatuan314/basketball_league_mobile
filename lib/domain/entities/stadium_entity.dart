@@ -3,7 +3,7 @@ class StadiumEntity {
   String? name;
   String? address;
   int? capacity;
-  int? ticketPrice;
+  double? ticketPrice;
 
   StadiumEntity({
     this.id,

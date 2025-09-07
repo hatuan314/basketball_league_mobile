@@ -4,7 +4,7 @@ import 'package:baseketball_league_mobile/common/injection.dart';
 import 'package:baseketball_league_mobile/presentation/stadium_feature/stadium_list/bloc/stadium_list_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/stadium_feature/stadium_list/widgets/stadium_list_body.dart';
 import 'package:baseketball_league_mobile/presentation/stadium_feature/stadium_list/widgets/stadium_search_bar.dart';
-import 'package:baseketball_league_mobile/presentation/theme/app_colors.dart';
+import 'package:baseketball_league_mobile/presentation/theme/app_color.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

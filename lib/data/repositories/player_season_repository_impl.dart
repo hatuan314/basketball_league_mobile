@@ -5,6 +5,7 @@ import 'package:baseketball_league_mobile/data/datasources/player_season_api.dar
 import 'package:baseketball_league_mobile/data/datasources/team_api.dart';
 import 'package:baseketball_league_mobile/data/models/player_season_model.dart';
 import 'package:baseketball_league_mobile/domain/entities/player_season_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/player_detail_entity.dart';
 import 'package:baseketball_league_mobile/domain/repositories/player_season_repository.dart';
 import 'package:dartz/dartz.dart';
 
@@ -144,6 +145,26 @@ class PlayerSeasonRepositoryImpl implements PlayerSeasonRepository {
       return await _playerSeasonApi.deletePlayerSeason(playerSeasonId);
     } catch (e) {
       return Left(Exception('Lỗi khi xóa thông tin cầu thủ theo mùa giải: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, List<PlayerDetailEntity>>> getPlayerDetailsBySeasonIdAndTeamId(
+    int seasonId, {
+    int? teamId,
+  }) async {
+    try {
+      // Gọi API để lấy danh sách chi tiết cầu thủ
+      final result = await _playerSeasonApi.getPlayerDetailsBySeasonIdAndTeamId(
+        seasonId,
+        teamId: teamId,
+      );
+      
+      return result;
+    } catch (e) {
+      return Left(
+        Exception('Lỗi khi lấy danh sách chi tiết cầu thủ: $e'),
+      );
     }
   }
 

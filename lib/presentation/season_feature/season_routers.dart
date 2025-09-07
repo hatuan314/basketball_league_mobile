@@ -1,6 +1,10 @@
 import 'package:baseketball_league_mobile/common/constants/router_name.dart';
 import 'package:baseketball_league_mobile/domain/entities/season_entity.dart';
 import 'package:baseketball_league_mobile/domain/entities/team_standing_entity.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/bloc/match_detail_cubit.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/match_detail_screen.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/round/round_detail/bloc/round_detail_cubit.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/round/round_detail/round_detail_screen.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/round/round_list/bloc/round_list_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/round/round_list/round_list_screen.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/season_detail/season_detail_screen.dart';
@@ -52,6 +56,36 @@ RouteBase seasonRouter = GoRoute(
               child: RoundListScreen(seasonId: seasonId),
             );
           },
+          routes: [
+            GoRoute(
+              path: RouterName.roundDetail,
+              builder: (context, state) {
+                final roundId = state.extra as int;
+                return BlocProvider(
+                  create: (context) => GetIt.instance<RoundDetailCubit>(),
+                  child: RoundDetailScreen(roundId: roundId),
+                );
+              },
+              routes: [
+                GoRoute(
+                  path: RouterName.matchDetail,
+                  builder: (context, state) {
+                    final Map<String, dynamic> params =
+                        state.extra as Map<String, dynamic>;
+                    final int matchId = params['matchId'];
+                    final int roundId = params['roundId'];
+                    return BlocProvider(
+                      create: (context) => GetIt.instance<MatchDetailCubit>(),
+                      child: MatchDetailScreen(
+                        matchId: matchId,
+                        roundId: roundId,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
         ),
         GoRoute(
           path: RouterName.teamDetail,

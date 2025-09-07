@@ -1,5 +1,5 @@
 import 'package:baseketball_league_mobile/domain/entities/round_entity.dart';
-import 'package:baseketball_league_mobile/presentation/theme/app_colors.dart';
+import 'package:baseketball_league_mobile/presentation/theme/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';

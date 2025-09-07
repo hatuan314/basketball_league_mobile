@@ -2,6 +2,7 @@ import 'package:baseketball_league_mobile/common/constants/router_name.dart';
 import 'package:baseketball_league_mobile/presentation/home/bloc/home_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/home/home_screen.dart';
 import 'package:baseketball_league_mobile/presentation/player_feature/player_routers.dart';
+import 'package:baseketball_league_mobile/presentation/referee_feature/referee_routers.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/season_routers.dart';
 import 'package:baseketball_league_mobile/presentation/splash/splash_screen.dart';
 import 'package:baseketball_league_mobile/presentation/stadium_feature/stadium_routers.dart';
@@ -32,5 +33,6 @@ final GoRouter router = GoRouter(
     teamFeatureRoutes,
     stadiumRouter,
     playerFeatureRoutes,
+    refereeFeatureRoutes,
   ],
 );

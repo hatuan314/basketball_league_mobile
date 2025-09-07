@@ -1,4 +1,5 @@
 import 'package:baseketball_league_mobile/domain/entities/player_season_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/player_detail_entity.dart';
 import 'package:baseketball_league_mobile/domain/repositories/player_season_repository.dart';
 import 'package:baseketball_league_mobile/domain/usecases/player_season_usecase.dart';
 import 'package:dartz/dartz.dart';
@@ -148,6 +149,33 @@ class PlayerSeasonUsecaseImpl implements PlayerSeasonUsecase {
     } catch (e) {
       return Left(
         Exception('Lỗi khi cập nhật thông tin cầu thủ theo mùa giải: $e'),
+      );
+    }
+  }
+  
+  @override
+  Future<Either<Exception, List<PlayerDetailEntity>>> getPlayerDetailsBySeasonIdAndTeamId(
+    int seasonId, {
+    int? teamId,
+  }) async {
+    try {
+      // Kiểm tra dữ liệu đầu vào
+      if (seasonId <= 0) {
+        return Left(Exception('ID mùa giải không hợp lệ'));
+      }
+      
+      if (teamId != null && teamId <= 0) {
+        return Left(Exception('ID đội bóng không hợp lệ'));
+      }
+      
+      // Gọi repository để lấy danh sách chi tiết cầu thủ
+      return await _repository.getPlayerDetailsBySeasonIdAndTeamId(
+        seasonId,
+        teamId: teamId,
+      );
+    } catch (e) {
+      return Left(
+        Exception('Lỗi khi lấy danh sách chi tiết cầu thủ: $e'),
       );
     }
   }

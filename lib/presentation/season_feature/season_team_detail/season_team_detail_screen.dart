@@ -3,8 +3,8 @@ import 'package:baseketball_league_mobile/presentation/season_feature/season_tea
 import 'package:baseketball_league_mobile/presentation/season_feature/season_team_detail/widgets/competition_results_widget.dart'
     show CompetitionResultsWidget;
 import 'package:baseketball_league_mobile/presentation/season_feature/season_team_detail/widgets/player_list_section.dart';
-import 'package:baseketball_league_mobile/presentation/theme/app_color.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_style.dart';
+import 'package:baseketball_league_mobile/presentation/widgets/app_error_state_widget.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/app_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -59,8 +59,18 @@ class _SeasonTeamDetailScreenState extends State<SeasonTeamDetailScreen> {
           }
         },
         builder: (context, state) {
-          if (state.isLoading) {
-            return _buildLoadingState();
+          if (state.status == SeasonTeamDetailStatus.loading) {
+            return const Center(child: AppLoading());
+          } else if (state.status == SeasonTeamDetailStatus.error) {
+            return AppErrorStateWidget(
+              errorMessage: state.errorMessage!,
+              onRetry: () {
+                context.read<SeasonTeamDetailCubit>().loadTeamDetail(
+                  widget.teamId,
+                  widget.seasonId,
+                );
+              },
+            );
           }
 
           return SingleChildScrollView(
@@ -81,35 +91,6 @@ class _SeasonTeamDetailScreenState extends State<SeasonTeamDetailScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  /// Widget hiển thị trạng thái đang tải
-  Widget _buildLoadingState() {
-    return Center(child: AppLoading());
-  }
-
-  /// Widget hiển thị một dòng thông tin xếp hạng
-  Widget _buildStandingInfoRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -1,14 +1,17 @@
+import 'package:baseketball_league_mobile/common/constants/router_name.dart';
+import 'package:baseketball_league_mobile/common/extentions/route_extension.dart';
 import 'package:baseketball_league_mobile/domain/entities/round_entity.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/round/round_list/bloc/round_list_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/round/round_list/bloc/round_list_state.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/round/round_list/widgets/round_item_card.dart';
-import 'package:baseketball_league_mobile/presentation/theme/app_colors.dart';
+import 'package:baseketball_league_mobile/presentation/theme/app_color.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_style.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/app_loading.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/empty_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 /// Màn hình hiển thị danh sách vòng đấu của một mùa giải
 class RoundListScreen extends StatefulWidget {
@@ -152,10 +155,6 @@ class _RoundListScreenState extends State<RoundListScreen> {
   /// Điều hướng đến màn hình chi tiết vòng đấu
   void _navigateToRoundDetail(BuildContext context, RoundEntity round) {
     // TODO: Điều hướng đến màn hình chi tiết vòng đấu
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Chức năng xem chi tiết vòng đấu đang được phát triển'),
-      ),
-    );
+    context.push(RouterName.roundDetail.toRoundRoute(), extra: round.id!);
   }
 }

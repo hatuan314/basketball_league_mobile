@@ -24,14 +24,15 @@ abstract class SeasonTeamUseCase {
   Future<Either<Exception, List<TeamStandingEntity>>> searchTeamStandingByName(
     String name,
   );
-  
+
   /// Lấy bảng xếp hạng đội bóng trong một mùa giải
   /// [seasonId] là ID của mùa giải cần lấy bảng xếp hạng
   /// Nếu [seasonId] là null, sẽ lấy bảng xếp hạng của tất cả các mùa giải
   Future<Either<Exception, List<TeamStandingEntity>>> getTeamStandings({
     int? seasonId,
+    int? teamId,
   });
-  
+
   /// Tạo hàng loạt mối quan hệ giữa giải đấu và đội bóng
   /// Tự động chọn ngẫu nhiên ít nhất 8 đội bóng và sân vận động từ cơ sở dữ liệu
   /// [seasonId] là ID của mùa giải cần tạo mối quan hệ
@@ -39,12 +40,12 @@ abstract class SeasonTeamUseCase {
   Future<Either<Exception, List<SeasonTeamEntity>>> createBulkSeasonTeams({
     required int seasonId,
   });
-  
+
   /// Lấy thông tin đội bóng trong một mùa giải dựa trên season_id và team_id
-  /// 
+  ///
   /// [seasonId]: ID của mùa giải
   /// [teamId]: ID của đội bóng
-  /// 
+  ///
   /// Trả về thông tin đội bóng trong mùa giải nếu thành công hoặc Exception nếu thất bại
   Future<Either<Exception, SeasonTeamEntity?>> getSeasonTeamBySeasonAndTeam({
     required int seasonId,

@@ -815,4 +815,30 @@ class ConfigView {
       print('Lỗi khi liệt kê view: $e');
     }
   }
+
+  /// 15. View thông tin chi tiết về trọng tài
+  Future<void> createRefereeDetail() async {
+    final exists = await _checkExistView('referee_detail');
+    if (!exists) {
+      await _createRefereeDetailView();
+    }
+  }
+
+  Future<void> _createRefereeDetailView() async {
+    final query = '''
+                CREATE OR REPLACE VIEW referee_detail AS
+                SELECT 
+                    r.referee_id,
+                    r.full_name,
+                    r.email,
+                    rp.phone
+                FROM 
+                    referee r
+                LEFT JOIN 
+                    referee_phone rp ON r.referee_id = rp.referee_id
+                ORDER BY 
+                    r.referee_id;
+                ''';
+    await _conn.execute(query);
+  }
 }

@@ -2,6 +2,7 @@ import 'package:baseketball_league_mobile/common/injection.dart';
 import 'package:baseketball_league_mobile/common/postgresql/connect_database.dart';
 import 'package:baseketball_league_mobile/data/datasources/player_season_api.dart';
 import 'package:baseketball_league_mobile/data/models/player_season_model.dart';
+import 'package:baseketball_league_mobile/data/models/player_detail_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:postgres/postgres.dart';
 
@@ -208,6 +209,67 @@ class PlayerSeasonApiImpl implements PlayerSeasonApi {
       return Left(Exception('Không tìm thấy bản ghi cần xóa'));
     } catch (e) {
       return Left(Exception('Lỗi khi xóa thông tin cầu thủ theo mùa giải: $e'));
+    }
+  }
+  
+  @override
+  Future<Either<Exception, List<PlayerDetailModel>>> getPlayerDetailsBySeasonIdAndTeamId(
+    int seasonId, {
+    int? teamId,
+  }) async {
+    try {
+      final conn = sl.get<PostgresConnection>().conn;
+      
+      // Xây dựng câu truy vấn SQL với tham số
+      String query = '''
+      SELECT 
+          p.player_id,
+          p.player_code,
+          p.full_name,
+          p.dob,
+          p.height_cm,
+          p.weight_kg,
+          t.team_id,
+          t.team_name,
+          t.team_code,
+          ps.shirt_number,
+          s.season_id,
+          s.name AS season_name
+      FROM 
+          player p
+      JOIN 
+          player_season ps ON p.player_id = ps.player_id
+      JOIN 
+          season_team st ON ps.season_team_id = st.season_team_id
+      JOIN 
+          team t ON st.team_id = t.team_id
+      JOIN 
+          season s ON st.season_id = s.season_id
+      WHERE 
+          s.season_id = @seasonId
+      ''';
+
+      // Tham số cho truy vấn
+      Map<String, dynamic> params = {'seasonId': seasonId};
+      
+      // Thêm điều kiện lọc theo đội bóng nếu có
+      if (teamId != null) {
+        query += ''' AND t.team_id = @teamId''';
+        params['teamId'] = teamId;
+      }
+      
+      // Thêm sắp xếp theo đội và số áo
+      query += ''' ORDER BY t.team_name, ps.shirt_number''';
+      
+      // Thực thi truy vấn
+      final results = await conn.execute(Sql.named(query), parameters: params);
+      
+      // Chuyển đổi kết quả thành danh sách PlayerDetailModel
+      return Right(
+        results.map((row) => PlayerDetailModel.fromPostgres(row)).toList(),
+      );
+    } catch (e) {
+      return Left(Exception('Lỗi khi lấy danh sách chi tiết cầu thủ: $e'));
     }
   }
 }

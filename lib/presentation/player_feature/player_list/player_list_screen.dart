@@ -1,9 +1,9 @@
 import 'package:baseketball_league_mobile/presentation/player_feature/player_list/bloc/player_list_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/player_feature/player_list/widgets/player_listview.dart';
+import 'package:baseketball_league_mobile/presentation/widgets/app_error_state_widget.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/app_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class PlayerListScreen extends StatefulWidget {
   const PlayerListScreen({Key? key}) : super(key: key);
@@ -37,33 +37,9 @@ class _PlayerListScreenState extends State<PlayerListScreen> {
             case PlayerListStatus.loaded:
               return PlayerListview(players: state.playerList ?? []);
             case PlayerListStatus.error:
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline, size: 60.sp, color: Colors.red),
-                    SizedBox(height: 16.h),
-                    Text(
-                      'Đã xảy ra lỗi',
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      state.errorMessage ?? 'Không thể tải danh sách cầu thủ',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14.sp),
-                    ),
-                    SizedBox(height: 24.h),
-                    ElevatedButton(
-                      onPressed:
-                          () => context.read<PlayerListCubit>().initial(),
-                      child: const Text('Thử lại'),
-                    ),
-                  ],
-                ),
+              return AppErrorStateWidget(
+                errorMessage: state.errorMessage ?? '',
+                onRetry: () => context.read<PlayerListCubit>().initial(),
               );
           }
         },

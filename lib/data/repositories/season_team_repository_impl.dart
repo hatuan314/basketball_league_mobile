@@ -91,10 +91,14 @@ class SeasonTeamRepositoryImpl implements SeasonTeamRepository {
   @override
   Future<Either<Exception, List<TeamStandingEntity>>> getTeamStandings({
     int? seasonId,
+    int? teamId,
   }) async {
     try {
       // Gọi API để lấy bảng xếp hạng
-      final result = await seasonTeamApi.getTeamStandings(seasonId: seasonId);
+      final result = await seasonTeamApi.getTeamStandings(
+        seasonId: seasonId,
+        teamId: teamId,
+      );
 
       // Xử lý kết quả trả về
       return result.fold(
@@ -262,7 +266,7 @@ class SeasonTeamRepositoryImpl implements SeasonTeamRepository {
       );
     }
   }
-  
+
   @override
   Future<Either<Exception, SeasonTeamEntity?>> getSeasonTeamBySeasonAndTeam({
     required int seasonId,
@@ -274,7 +278,7 @@ class SeasonTeamRepositoryImpl implements SeasonTeamRepository {
         seasonId: seasonId,
         teamId: teamId,
       );
-      
+
       // Xử lý kết quả trả về
       return result.fold(
         (exception) => Left(exception),
@@ -282,7 +286,9 @@ class SeasonTeamRepositoryImpl implements SeasonTeamRepository {
       );
     } catch (e) {
       return Left(
-        Exception('Lỗi khi lấy thông tin đội bóng trong mùa giải: ${e.toString()}'),
+        Exception(
+          'Lỗi khi lấy thông tin đội bóng trong mùa giải: ${e.toString()}',
+        ),
       );
     }
   }

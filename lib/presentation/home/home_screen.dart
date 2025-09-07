@@ -81,6 +81,14 @@ class _MyHomePageState extends State<MyHomePage> {
                       context.push(RouterName.playerList);
                     },
                   ),
+                  MenuButtonWidget(
+                    iconPath: AppImagePaths.referee,
+                    color: AppColors.orange,
+                    title: "Danh sách\ntrọng tài",
+                    onTap: () {
+                      context.push(RouterName.refereeList);
+                    },
+                  ),
                 ],
               ),
             );

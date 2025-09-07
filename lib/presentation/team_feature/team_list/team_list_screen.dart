@@ -4,7 +4,7 @@ import 'package:baseketball_league_mobile/common/extentions/route_extension.dart
 import 'package:baseketball_league_mobile/domain/entities/team_entity.dart';
 import 'package:baseketball_league_mobile/presentation/team_feature/team_list/bloc/team_list_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/team_feature/team_list/widget/team_item_card.dart';
-import 'package:baseketball_league_mobile/presentation/theme/app_colors.dart';
+import 'package:baseketball_league_mobile/presentation/theme/app_color.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_style.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/app_loading.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/empty_widget.dart';

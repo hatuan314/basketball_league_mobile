@@ -1,11 +1,13 @@
-import 'package:baseketball_league_mobile/domain/entities/player_season_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/player_detail_entity.dart';
 import 'package:baseketball_league_mobile/domain/entities/team_standing_entity.dart';
 import 'package:equatable/equatable.dart';
+
+enum SeasonTeamDetailStatus { loading, loaded, error }
 
 /// Trạng thái của màn hình chi tiết đội bóng
 class SeasonTeamDetailState extends Equatable {
   /// Trạng thái đang tải dữ liệu
-  final bool isLoading;
+  final SeasonTeamDetailStatus status;
 
   /// Trạng thái đang tạo cầu thủ
   final bool isGeneratingPlayers;
@@ -17,11 +19,11 @@ class SeasonTeamDetailState extends Equatable {
   final TeamStandingEntity? teamStanding;
 
   /// Danh sách cầu thủ của đội bóng
-  final List<PlayerSeasonEntity> players;
+  final List<PlayerDetailEntity> players;
 
   /// Constructor
   const SeasonTeamDetailState({
-    this.isLoading = false,
+    this.status = SeasonTeamDetailStatus.loading,
     this.isGeneratingPlayers = false,
     this.errorMessage,
     this.teamStanding,
@@ -30,14 +32,14 @@ class SeasonTeamDetailState extends Equatable {
 
   /// Tạo bản sao với các thuộc tính mới
   SeasonTeamDetailState copyWith({
-    bool? isLoading,
+    SeasonTeamDetailStatus? status,
     bool? isGeneratingPlayers,
     String? errorMessage,
     TeamStandingEntity? teamStanding,
-    List<PlayerSeasonEntity>? players,
+    List<PlayerDetailEntity>? players,
   }) {
     return SeasonTeamDetailState(
-      isLoading: isLoading ?? this.isLoading,
+      status: status ?? this.status,
       isGeneratingPlayers: isGeneratingPlayers ?? this.isGeneratingPlayers,
       errorMessage: errorMessage,
       teamStanding: teamStanding ?? this.teamStanding,
@@ -47,10 +49,10 @@ class SeasonTeamDetailState extends Equatable {
 
   @override
   List<Object?> get props => [
-        isLoading,
-        isGeneratingPlayers,
-        errorMessage,
-        teamStanding,
-        players,
-      ];
+    status,
+    isGeneratingPlayers,
+    errorMessage,
+    teamStanding,
+    players,
+  ];
 }

@@ -5,7 +5,7 @@ class StadiumModel {
   String? name;
   String? address;
   int? capacity;
-  int? ticketPrice;
+  double? ticketPrice;
 
   StadiumModel({
     this.id,
@@ -21,7 +21,7 @@ class StadiumModel {
       name: row[1] as String,
       address: row[2] as String,
       capacity: row[3] as int,
-      ticketPrice: double.parse(row[4] as String).toInt(),
+      ticketPrice: double.parse(row[4] as String),
     );
   }
 

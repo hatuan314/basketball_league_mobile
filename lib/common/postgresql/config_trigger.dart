@@ -473,14 +473,14 @@ class ConfigTrigger {
       LANGUAGE plpgsql
       AS E'
       DECLARE
-        season_id INT;
+        match_season_id INT;
         match_count INT;
         home_team_actual_id INT;
         away_team_actual_id INT;
       BEGIN
         -- Lấy thông tin mùa giải và đội bóng
         SELECT st1.season_id, st1.team_id, st2.team_id
-        INTO season_id, home_team_actual_id, away_team_actual_id
+        INTO match_season_id, home_team_actual_id, away_team_actual_id
         FROM season_team st1, season_team st2
         WHERE st1.season_team_id = NEW.home_team_id AND st2.season_team_id = NEW.away_team_id;
 
@@ -490,7 +490,7 @@ class ConfigTrigger {
           JOIN round r ON m.round_id = r.round_id
           JOIN season_team st_home ON m.home_team_id = st_home.season_team_id
           JOIN season_team st_away ON m.away_team_id = st_away.season_team_id
-        WHERE r.season_id = season_id
+        WHERE r.season_id = match_season_id
           AND ((st_home.team_id = home_team_actual_id AND st_away.team_id = away_team_actual_id)
             OR (st_home.team_id = away_team_actual_id AND st_away.team_id = home_team_actual_id));
 
@@ -733,26 +733,28 @@ class ConfigTrigger {
 
     // Tạo function cho trigger
     final createFunction = '''
-      CREATE OR REPLACE FUNCTION create_match_venue_func()
+      CREATE OR REPLACE FUNCTION ensure_match_venue()
         RETURNS TRIGGER
         LANGUAGE plpgsql
         AS E'
       DECLARE
-        venue_id INT;
+        home_stadium_id INT;
       BEGIN
-        -- Kiểm tra xem trận đấu đã có địa điểm thi đấu chưa
-        IF NEW.venue_id IS NULL THEN
-          -- Lấy địa điểm thi đấu của đội nhà
-          SELECT home_venue_id INTO venue_id
-          FROM season_team
-          WHERE season_team_id = NEW.home_team_id;
+        -- Lấy sân nhà của đội chủ nhà
+        SELECT st.home_id INTO home_stadium_id
+        FROM season_team st
+        WHERE st.season_team_id = NEW.home_team_id;
 
-          -- Nếu có địa điểm thi đấu, gán cho trận đấu
-          IF venue_id IS NOT NULL THEN
-            NEW.venue_id := venue_id;
-          END IF;
+        IF home_stadium_id IS NULL THEN
+          RAISE EXCEPTION ''BL-E016: Đội chủ nhà chưa đăng ký sân nhà cho mùa giải này'';
         END IF;
 
+        -- Tự động thêm bản ghi vào bảng match_venue với sân nhà của đội chủ nhà
+        INSERT INTO match_venue (match_id, stadium_id, is_home_stadium)
+        VALUES (NEW.match_id, home_stadium_id, TRUE);
+
+        RAISE NOTICE ''BL-N019: Đã tự động thêm sân nhà cho trận đấu %'', NEW.match_id;
+        
         RETURN NEW;
       END;'
     ''';
@@ -761,9 +763,9 @@ class ConfigTrigger {
     // Tạo trigger
     final createTrigger = '''
       CREATE TRIGGER create_match_venue
-        BEFORE INSERT OR UPDATE ON match
+        AFTER INSERT ON match
         FOR EACH ROW
-      EXECUTE FUNCTION create_match_venue_func();
+      EXECUTE FUNCTION ensure_match_venue();
     ''';
     await _conn.execute(createTrigger);
   }

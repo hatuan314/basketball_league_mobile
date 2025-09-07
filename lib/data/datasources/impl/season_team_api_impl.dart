@@ -253,6 +253,7 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
   @override
   Future<Either<Exception, List<TeamStandingModel>>> getTeamStandings({
     int? seasonId,
+    int? teamId,
   }) async {
     if (seasonId == null) {
       return Right([]);
@@ -286,10 +287,17 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
           total_fouls
         FROM team_standings
         WHERE season_id = @seasonId
-        ORDER BY total_points DESC, point_difference DESC, total_points_scored DESC
         ''';
 
       parameters = {'seasonId': seasonId};
+
+      if (teamId != null) {
+        query += ' AND team_id = @teamId';
+        parameters['teamId'] = teamId;
+      }
+
+      query +=
+          ' ORDER BY total_points DESC, point_difference DESC, total_points_scored DESC';
 
       // Thực thi câu lệnh SQL
       final result = await postgresConnection.conn.execute(
@@ -308,7 +316,7 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
       );
     }
   }
-  
+
   @override
   Future<Either<Exception, SeasonTeamModel?>> getSeasonTeamBySeasonAndTeam({
     required int seasonId,
@@ -320,7 +328,7 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
       if (!postgresConnection.conn.isOpen) {
         await postgresConnection.connectDb();
       }
-      
+
       // Câu lệnh SQL để lấy thông tin đội bóng trong một mùa giải
       final query = '''
       SELECT st.season_team_id, st.season_id, st.team_id, st.home_id,
@@ -333,27 +341,26 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
       JOIN stadium sd ON st.home_id = sd.stadium_id
       WHERE st.season_id = @seasonId AND st.team_id = @teamId
       ''';
-      
+
       // Thực thi câu lệnh SQL với các tham số
       final result = await postgresConnection.conn.execute(
         Sql.named(query),
-        parameters: {
-          'seasonId': seasonId,
-          'teamId': teamId,
-        },
+        parameters: {'seasonId': seasonId, 'teamId': teamId},
       );
-      
+
       // Kiểm tra kết quả trả về
       if (result.isEmpty) {
         return const Right(null);
       }
-      
+
       // Chuyển đổi kết quả thành model
       final seasonTeam = SeasonTeamModel.fromRow(result.first);
       return Right(seasonTeam);
     } catch (e) {
       return Left(
-        Exception('Lỗi khi lấy thông tin đội bóng trong mùa giải: ${e.toString()}'),
+        Exception(
+          'Lỗi khi lấy thông tin đội bóng trong mùa giải: ${e.toString()}',
+        ),
       );
     }
   }

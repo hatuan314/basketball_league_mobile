@@ -1,4 +1,5 @@
 import 'package:baseketball_league_mobile/data/models/player_season_model.dart';
+import 'package:baseketball_league_mobile/data/models/player_detail_model.dart';
 import 'package:dartz/dartz.dart';
 
 /// Interface định nghĩa các phương thức API để quản lý thông tin cầu thủ theo mùa giải
@@ -47,4 +48,15 @@ abstract class PlayerSeasonApi {
   ///
   /// Trả về Unit nếu xóa thành công hoặc Exception nếu thất bại
   Future<Either<Exception, Unit>> deletePlayerSeason(String playerSeasonId);
+  
+  /// Lấy danh sách chi tiết cầu thủ theo mùa giải và đội bóng
+  ///
+  /// [seasonId]: ID của mùa giải
+  /// [teamId]: ID của đội bóng (có thể null để lấy tất cả cầu thủ trong mùa giải)
+  ///
+  /// Trả về danh sách chi tiết cầu thủ nếu thành công hoặc Exception nếu thất bại
+  Future<Either<Exception, List<PlayerDetailModel>>> getPlayerDetailsBySeasonIdAndTeamId(
+    int seasonId, {
+    int? teamId,
+  });
 }

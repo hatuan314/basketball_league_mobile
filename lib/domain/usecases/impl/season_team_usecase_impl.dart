@@ -58,9 +58,13 @@ class SeasonTeamUseCaseImpl implements SeasonTeamUseCase {
   @override
   Future<Either<Exception, List<TeamStandingEntity>>> getTeamStandings({
     int? seasonId,
+    int? teamId,
   }) async {
     // Gọi repository để lấy bảng xếp hạng
-    return await _repository.getTeamStandings(seasonId: seasonId);
+    return await _repository.getTeamStandings(
+      seasonId: seasonId,
+      teamId: teamId,
+    );
   }
 
   @override
@@ -142,7 +146,7 @@ class SeasonTeamUseCaseImpl implements SeasonTeamUseCase {
       (teamColors) => Right(teamColors),
     );
   }
-  
+
   @override
   Future<Either<Exception, SeasonTeamEntity?>> getSeasonTeamBySeasonAndTeam({
     required int seasonId,
@@ -152,11 +156,11 @@ class SeasonTeamUseCaseImpl implements SeasonTeamUseCase {
     if (seasonId <= 0) {
       return Left(Exception('ID mùa giải không hợp lệ'));
     }
-    
+
     if (teamId <= 0) {
       return Left(Exception('ID đội bóng không hợp lệ'));
     }
-    
+
     // Gọi repository để lấy thông tin đội bóng trong mùa giải
     return await _repository.getSeasonTeamBySeasonAndTeam(
       seasonId: seasonId,

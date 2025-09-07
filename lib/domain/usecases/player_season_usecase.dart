@@ -1,4 +1,5 @@
 import 'package:baseketball_league_mobile/domain/entities/player_season_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/player_detail_entity.dart';
 import 'package:dartz/dartz.dart';
 
 /// Interface cho các use case liên quan đến thông tin cầu thủ theo mùa giải
@@ -45,5 +46,14 @@ abstract class PlayerSeasonUsecase {
     required int teamId,
     required int seasonTeamId,
     required int seasonId,
+  });
+  
+  /// Lấy danh sách chi tiết cầu thủ theo mùa giải và đội bóng
+  /// [seasonId] là ID của mùa giải
+  /// [teamId] là ID của đội bóng (tùy chọn)
+  /// Trả về danh sách chi tiết cầu thủ hoặc Exception nếu có lỗi
+  Future<Either<Exception, List<PlayerDetailEntity>>> getPlayerDetailsBySeasonIdAndTeamId(
+    int seasonId, {
+    int? teamId,
   });
 }

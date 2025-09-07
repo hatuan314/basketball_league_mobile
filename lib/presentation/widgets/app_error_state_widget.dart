@@ -1,4 +1,4 @@
-import 'package:baseketball_league_mobile/presentation/theme/app_colors.dart';
+import 'package:baseketball_league_mobile/presentation/theme/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -18,23 +18,30 @@ class AppErrorStateWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 60.r, color: AppColors.red),
-          SizedBox(height: 16.r),
+          Icon(Icons.error_outline, size: 60.sp, color: AppColors.red),
+          SizedBox(height: 16.sp),
           Text(
             'Đã xảy ra lỗi',
             style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 8.r),
+          SizedBox(height: 8.sp),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 32.r),
+            padding: EdgeInsets.symmetric(horizontal: 32.sp),
             child: Text(
               errorMessage,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14.sp),
             ),
           ),
-          SizedBox(height: 24.r),
-          ElevatedButton(onPressed: onRetry, child: const Text('Thử lại')),
+          SizedBox(height: 24.sp),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.orange,
+              foregroundColor: AppColors.white,
+            ),
+            onPressed: onRetry,
+            child: const Text('Thử lại'),
+          ),
         ],
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:baseketball_league_mobile/domain/entities/player_detail_entity.dart';
 import 'package:baseketball_league_mobile/domain/entities/player_season_entity.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/season_team_detail/bloc/season_team_detail_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/season_team_detail/bloc/season_team_detail_state.dart';
@@ -54,7 +55,7 @@ class PlayerListSection extends StatelessWidget {
   /// Widget hiển thị danh sách cầu thủ
   Widget _buildPlayerList(
     BuildContext context,
-    List<PlayerSeasonEntity> players,
+    List<PlayerDetailEntity> players,
   ) {
     return ListView.separated(
       shrinkWrap: true,
@@ -71,7 +72,7 @@ class PlayerListSection extends StatelessWidget {
   /// Widget hiển thị thông tin một cầu thủ
   Widget _buildPlayerItem(
     BuildContext context,
-    PlayerSeasonEntity player,
+    PlayerDetailEntity player,
     int index,
   ) {
     return Card(
@@ -85,8 +86,8 @@ class PlayerListSection extends StatelessWidget {
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
-        title: Text('Cầu thủ #${player.playerId}', style: AppStyle.bodyMedium),
-        subtitle: Text('ID: ${player.id}', style: AppStyle.bodySmall),
+        title: Text(player.fullName, style: AppStyle.bodyMedium),
+        subtitle: Text('ID: ${player.playerCode}', style: AppStyle.bodySmall),
         trailing: Icon(Icons.chevron_right),
         onTap: () {
           // Xử lý khi nhấn vào cầu thủ

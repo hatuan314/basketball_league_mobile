@@ -29,13 +29,10 @@ class PlayerRepositoryImpl implements PlayerRepository {
   @override
   Future<Either<Exception, bool>> deletePlayer(int id) async {
     final result = await playerApi.deletePlayer(id);
-    return result.fold(
-      (exception) {
-        print('Failed to delete player: $exception');
-        return Left(exception);
-      },
-      (success) => Right(success),
-    );
+    return result.fold((exception) {
+      print('Failed to delete player: $exception');
+      return Left(exception);
+    }, (success) => Right(success));
   }
 
   @override
@@ -51,28 +48,27 @@ class PlayerRepositoryImpl implements PlayerRepository {
   }
 
   @override
-  Future<Either<Exception, List<PlayerEntity>>> searchPlayer(String name) async {
+  Future<Either<Exception, List<PlayerEntity>>> searchPlayer(
+    String name,
+  ) async {
     final results = await playerApi.searchPlayer(name);
-    return results.fold(
-      (exception) {
-        print('Failed to search player: $exception');
-        return Left(exception);
-      },
-      (playerList) => Right(playerList.map((row) => row.toEntity()).toList()),
-    );
+    return results.fold((exception) {
+      print('Failed to search player: $exception');
+      return Left(exception);
+    }, (playerList) => Right(playerList.map((row) => row.toEntity()).toList()));
   }
 
   @override
-  Future<Either<Exception, bool>> updatePlayer(int id, PlayerEntity player) async {
+  Future<Either<Exception, bool>> updatePlayer(
+    int id,
+    PlayerEntity player,
+  ) async {
     final playerModel = PlayerModel.fromEntity(player);
     final result = await playerApi.updatePlayer(id, playerModel);
-    return result.fold(
-      (exception) {
-        print('Failed to update player: $exception');
-        return Left(exception);
-      },
-      (success) => Right(success),
-    );
+    return result.fold((exception) {
+      print('Failed to update player: $exception');
+      return Left(exception);
+    }, (success) => Right(success));
   }
 
   @override
@@ -81,27 +77,24 @@ class PlayerRepositoryImpl implements PlayerRepository {
     final results = await Future.wait(
       playerModels.map((playerModel) => playerApi.createPlayer(playerModel)),
     );
-    
+
     // Kiểm tra kết quả từ mỗi Either
     bool allSuccess = true;
     Exception? firstException;
-    
+
     for (var result in results) {
-      final isSuccess = result.fold(
-        (exception) {
-          print('Failed to create player: $exception');
-          if (firstException == null) {
-            firstException = exception;
-          }
-          return false;
-        },
-        (success) => success,
-      );
+      final isSuccess = result.fold((exception) {
+        print('Failed to create player: $exception');
+        if (firstException == null) {
+          firstException = exception;
+        }
+        return false;
+      }, (success) => success);
       if (!isSuccess) {
         allSuccess = false;
       }
     }
-    
+
     if (!allSuccess && firstException != null) {
       return Left(firstException!);
     }

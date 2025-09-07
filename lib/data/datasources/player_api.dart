@@ -11,7 +11,7 @@ abstract class PlayerApi {
   Future<Either<Exception, bool>> deletePlayer(int id);
 
   Future<Either<Exception, List<PlayerModel>>> searchPlayer(String name);
-  
+
   /// Lấy thông tin chi tiết của một cầu thủ theo ID
   ///
   /// [playerId]: ID của cầu thủ cần lấy thông tin

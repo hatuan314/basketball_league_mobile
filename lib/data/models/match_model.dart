@@ -29,6 +29,36 @@ class MatchModel {
     this.awayFouls,
   });
 
+  MatchModel.fromPostgres(List<dynamic> row) {
+    id = row[0] as int;
+    roundId = row[1] as int;
+    matchDate = row[2] as DateTime;
+    homeTeamId = row[3] as int;
+    awayTeamId = row[4] as int;
+    homeColor = row[5] as String;
+    awayColor = row[6] as String;
+    attendance = row[7] as int;
+    homePoints = row[8] as int;
+    awayPoints = row[9] as int;
+    homeFouls = row[10] as int;
+    awayFouls = row[11] as int;
+  }
+
+  MatchModel.fromEntity(MatchEntity row) {
+    id = row.id;
+    roundId = row.roundId;
+    matchDate = row.matchDate;
+    homeTeamId = row.homeTeamId;
+    awayTeamId = row.awayTeamId;
+    homeColor = row.homeColor;
+    awayColor = row.awayColor;
+    attendance = row.attendance;
+    homePoints = row.homePoints;
+    awayPoints = row.awayPoints;
+    homeFouls = row.homeFouls;
+    awayFouls = row.awayFouls;
+  }
+
   MatchEntity toEntity() {
     return MatchEntity(
       id: id,

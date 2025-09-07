@@ -1,4 +1,7 @@
+import 'package:baseketball_league_mobile/common/app_utils.dart';
+import 'package:baseketball_league_mobile/domain/entities/player_detail_entity.dart';
 import 'package:baseketball_league_mobile/domain/entities/season_team_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/team_standing_entity.dart';
 import 'package:baseketball_league_mobile/domain/usecases/player_season_usecase.dart';
 import 'package:baseketball_league_mobile/domain/usecases/season_team_usecase.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/season_team_detail/bloc/season_team_detail_state.dart';
@@ -9,7 +12,7 @@ class SeasonTeamDetailCubit extends Cubit<SeasonTeamDetailState> {
   final SeasonTeamUseCase _seasonTeamUseCase;
   final PlayerSeasonUsecase _playerSeasonUsecase;
 
-  late SeasonTeamEntity _seasonTeam;
+  SeasonTeamEntity? _seasonTeam;
 
   /// Constructor
   SeasonTeamDetailCubit({
@@ -21,84 +24,101 @@ class SeasonTeamDetailCubit extends Cubit<SeasonTeamDetailState> {
 
   /// Lấy thông tin chi tiết của đội bóng
   Future<void> loadTeamDetail(int teamId, int seasonId) async {
-    emit(state.copyWith(isLoading: true, errorMessage: null));
+    emit(
+      state.copyWith(
+        status: SeasonTeamDetailStatus.loading,
+        errorMessage: null,
+      ),
+    );
 
     try {
-      // Lấy thông tin xếp hạng của đội bóng
-      final teamStandingsResult = await _seasonTeamUseCase.getTeamStandings(
-        seasonId: seasonId,
-      );
-
-      final seasonTeamResult = await _seasonTeamUseCase
-          .getSeasonTeamBySeasonAndTeam(teamId: teamId, seasonId: seasonId);
-      seasonTeamResult.fold(
-        (exception) {
+      final loadTeamDetailResult = await Future.wait([
+        _getSeasonTeamBySeasonAndTeam(teamId, seasonId),
+        _getTeamStanding(teamId, seasonId),
+        _getPlayerDetailsBySeasonIdAndTeamId(seasonId, teamId: teamId),
+      ]);
+      if (loadTeamDetailResult.isNotEmpty) {
+        _seasonTeam = loadTeamDetailResult[0] as SeasonTeamEntity?;
+        final teamStanding = loadTeamDetailResult[1] as TeamStandingEntity?;
+        final players = loadTeamDetailResult[2] as List<PlayerDetailEntity>?;
+        if (_seasonTeam == null || teamStanding == null || players == null) {
           emit(
             state.copyWith(
-              isLoading: false,
-              errorMessage:
-                  'Lỗi khi lấy thông tin đội bóng: ${exception.toString()}',
+              status: SeasonTeamDetailStatus.error,
+              errorMessage: 'Không tìm thấy thông tin đội bóng',
             ),
           );
-        },
-        (seasonTeam) {
-          _seasonTeam = seasonTeam!;
-        },
-      );
-
-      await teamStandingsResult.fold(
-        (exception) {
-          emit(
-            state.copyWith(
-              isLoading: false,
-              errorMessage:
-                  'Lỗi khi lấy thông tin xếp hạng: ${exception.toString()}',
-            ),
-          );
-        },
-        (teamStandings) async {
-          // Tìm đội bóng trong danh sách xếp hạng
-          final teamStanding = teamStandings.firstWhere(
-            (standing) => standing.teamId == teamId,
-            orElse: () => throw Exception('Không tìm thấy thông tin đội bóng'),
-          );
-
-          // Lấy danh sách cầu thủ của đội bóng
-          final playersResult = await _playerSeasonUsecase.getPlayerSeasons(
-            seasonTeamId: _seasonTeam.id,
-          );
-
-          playersResult.fold(
-            (exception) {
-              emit(
-                state.copyWith(
-                  isLoading: false,
-                  teamStanding: teamStanding,
-                  errorMessage:
-                      'Lỗi khi lấy danh sách cầu thủ: ${exception.toString()}',
-                ),
-              );
-            },
-            (players) {
-              emit(
-                state.copyWith(
-                  isLoading: false,
-                  teamStanding: teamStanding,
-                  players: players,
-                ),
-              );
-            },
-          );
-        },
-      );
+          return;
+        }
+        emit(
+          state.copyWith(
+            status: SeasonTeamDetailStatus.loaded,
+            teamStanding: teamStanding,
+            players: players,
+          ),
+        );
+      }
     } catch (e) {
       emit(
         state.copyWith(
-          isLoading: false,
+          status: SeasonTeamDetailStatus.error,
           errorMessage: 'Đã xảy ra lỗi: ${e.toString()}',
         ),
       );
     }
+  }
+
+  Future<TeamStandingEntity?> _getTeamStanding(int teamId, int seasonId) async {
+    final teamStandingsResult = await _seasonTeamUseCase.getTeamStandings(
+      seasonId: seasonId,
+      teamId: teamId,
+    );
+    return teamStandingsResult.fold(
+      (exception) {
+        emit(
+          state.copyWith(
+            status: SeasonTeamDetailStatus.error,
+            errorMessage:
+                'Lỗi khi lấy thông tin xếp hạng: ${exception.toString()}',
+          ),
+        );
+        return null;
+      },
+      (teamStandings) {
+        if (AppUtils.isNullEmptyList(teamStandings)) {
+          emit(
+            state.copyWith(
+              status: SeasonTeamDetailStatus.error,
+              errorMessage: 'Không tìm thấy thông tin đội bóng',
+            ),
+          );
+          return null;
+        }
+        // Tìm đội bóng trong danh sách xếp hạng
+        final teamStanding = teamStandings.first;
+        return teamStanding;
+      },
+    );
+  }
+
+  Future<SeasonTeamEntity?> _getSeasonTeamBySeasonAndTeam(
+    int teamId,
+    int seasonId,
+  ) async {
+    final result = await _seasonTeamUseCase.getSeasonTeamBySeasonAndTeam(
+      teamId: teamId,
+      seasonId: seasonId,
+    );
+    return result.fold((exception) {
+      emit(
+        state.copyWith(
+          status: SeasonTeamDetailStatus.error,
+          errorMessage:
+              'Lỗi khi lấy thông tin đội bóng: ${exception.toString()}',
+        ),
+      );
+      return null;
+    }, (seasonTeam) => seasonTeam);
   }
 
   /// Tạo danh sách cầu thủ tự động cho đội bóng
@@ -110,7 +130,7 @@ class SeasonTeamDetailCubit extends Cubit<SeasonTeamDetailState> {
       final result = await _playerSeasonUsecase.generatePlayerSeasons(
         teamId: teamId,
         seasonId: seasonId,
-        seasonTeamId: _seasonTeam.id!,
+        seasonTeamId: _seasonTeam!.id!,
       );
 
       result.fold(
@@ -122,8 +142,18 @@ class SeasonTeamDetailCubit extends Cubit<SeasonTeamDetailState> {
             ),
           );
         },
-        (players) {
-          emit(state.copyWith(isGeneratingPlayers: false, players: players));
+        (players) async {
+          // Lấy danh sách chi tiết cầu thủ [PlayerDetailEntity]
+          final playerDetails = await _getPlayerDetailsBySeasonIdAndTeamId(
+            seasonId,
+            teamId: teamId,
+          );
+          emit(
+            state.copyWith(
+              isGeneratingPlayers: false,
+              players: playerDetails ?? [],
+            ),
+          );
         },
       );
     } catch (e) {
@@ -133,6 +163,34 @@ class SeasonTeamDetailCubit extends Cubit<SeasonTeamDetailState> {
           errorMessage: 'Đã xảy ra lỗi: ${e.toString()}',
         ),
       );
+    }
+  }
+
+  Future<List<PlayerDetailEntity>?> _getPlayerDetailsBySeasonIdAndTeamId(
+    int seasonId, {
+    int? teamId,
+  }) async {
+    try {
+      final result = await _playerSeasonUsecase
+          .getPlayerDetailsBySeasonIdAndTeamId(seasonId, teamId: teamId);
+      return result.fold((exception) {
+        emit(
+          state.copyWith(
+            status: SeasonTeamDetailStatus.error,
+            errorMessage:
+                'Lỗi khi lấy danh sách chi tiết cầu thủ: ${exception.toString()}',
+          ),
+        );
+        return null;
+      }, (playerDetails) => playerDetails);
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: SeasonTeamDetailStatus.error,
+          errorMessage: 'Đã xảy ra lỗi: ${e.toString()}',
+        ),
+      );
+      return null;
     }
   }
 }

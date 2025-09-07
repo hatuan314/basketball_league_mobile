@@ -76,6 +76,7 @@ class PostgresConnection {
     await configView.createPlayerStatistics();
     await configView.createTopScores();
     await configView.createTopFoulsPlayers();
+    await configView.createRefereeDetail();
     await configView.createRefereeMonthlySalary();
     await configView.createStadiumRevenue();
     await configView.createRoundMatches();
