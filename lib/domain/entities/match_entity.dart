@@ -2,8 +2,8 @@ class MatchEntity {
   int? id;
   int? roundId;
   DateTime? matchDate;
-  int? homeTeamId;
-  int? awayTeamId;
+  int? homeSeasonTeamId;
+  int? awaySeasonTeamId;
   String? homeColor;
   String? awayColor;
   int? attendance;
@@ -16,8 +16,8 @@ class MatchEntity {
     this.id,
     this.roundId,
     this.matchDate,
-    this.homeTeamId,
-    this.awayTeamId,
+    this.homeSeasonTeamId,
+    this.awaySeasonTeamId,
     this.homeColor,
     this.awayColor,
     this.attendance,

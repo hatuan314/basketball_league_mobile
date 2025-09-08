@@ -2,10 +2,13 @@ import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.da
 import 'package:baseketball_league_mobile/domain/entities/match_referee_detail_entity.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/bloc/match_detail_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/bloc/match_detail_state.dart';
-import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/widgets/match_info_card.dart';
-import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/widgets/match_referee_card.dart';
-import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/widgets/match_score_card.dart';
-import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/widgets/match_stadium_card.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/tabs/away_players_tab.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/tabs/home_players_tab.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/tabs/info_tab.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/tabs/referees_tab.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/tabs/score_tab.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/tabs/stadium_tab.dart';
+import 'package:baseketball_league_mobile/presentation/theme/app_color.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_style.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/app_loading.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/empty_widget.dart';
@@ -27,16 +30,26 @@ class MatchDetailScreen extends StatefulWidget {
   State<MatchDetailScreen> createState() => _MatchDetailScreenState();
 }
 
-class _MatchDetailScreenState extends State<MatchDetailScreen> {
+class _MatchDetailScreenState extends State<MatchDetailScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 6, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<MatchDetailCubit>().initial(
         matchId: widget.matchId,
         roundId: widget.roundId,
       );
     });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -52,6 +65,39 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
             },
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(48.sp),
+          child: BlocBuilder<MatchDetailCubit, MatchDetailState>(
+            builder: (context, state) {
+              if (state.status == MatchDetailStatus.loading ||
+                  state.match == null) {
+                return Container(height: 48.sp);
+              }
+
+              return TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                labelColor: AppColors.primary,
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: AppColors.primary,
+                labelStyle: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+                unselectedLabelStyle: TextStyle(fontSize: 14.sp),
+                tabAlignment: TabAlignment.start,
+                tabs: const [
+                  Tab(text: 'Thông tin trận đấu'),
+                  Tab(text: 'Tỉ số trận đấu'),
+                  Tab(text: 'Thông tin sân vận động'),
+                  Tab(text: 'Danh sách trọng tài'),
+                  Tab(text: 'Cầu thủ đội nhà'),
+                  Tab(text: 'Cầu thủ đội khách'),
+                ],
+              );
+            },
+          ),
+        ),
       ),
       body: BlocConsumer<MatchDetailCubit, MatchDetailState>(
         listener: (context, state) {
@@ -106,45 +152,28 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
       onRefresh: () async {
         await context.read<MatchDetailCubit>().refreshMatchDetail();
       },
-      child: SingleChildScrollView(
+      child: TabBarView(
+        controller: _tabController,
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.all(16.sp),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Thông tin cơ bản về trận đấu
-            MatchInfoCard(match: match),
-            SizedBox(height: 16.sp),
+        children: [
+          // Tab 1: Thông tin trận đấu
+          InfoTab(match: match),
 
-            // Thông tin về tỷ số và điểm số
-            MatchScoreCard(
-              match: match,
-              onUpdateScore: (
-                homePoints,
-                awayPoints,
-                homeFouls,
-                awayFouls,
-                attendance,
-              ) {
-                context.read<MatchDetailCubit>().updateMatchScore(
-                  homePoints: homePoints,
-                  awayPoints: awayPoints,
-                  homeFouls: homeFouls,
-                  awayFouls: awayFouls,
-                  attendance: attendance,
-                );
-              },
-            ),
-            SizedBox(height: 16.sp),
+          // Tab 2: Tỉ số trận đấu
+          ScoreTab(match: match),
 
-            // Thông tin về sân vận động
-            MatchStadiumCard(match: match),
-            SizedBox(height: 16.sp),
+          // Tab 3: Thông tin sân vận động
+          StadiumTab(match: match),
 
-            // Thông tin về trọng tài
-            MatchRefereeCard(match: match, referees: referees),
-          ],
-        ),
+          // Tab 4: Danh sách trọng tài
+          RefereesTab(match: match, referees: referees),
+
+          // Tab 5: Danh sách cầu thủ đội nhà
+          HomePlayersTab(match: match),
+
+          // Tab 6: Danh sách cầu thủ đội khách
+          AwayPlayersTab(match: match),
+        ],
       ),
     );
   }

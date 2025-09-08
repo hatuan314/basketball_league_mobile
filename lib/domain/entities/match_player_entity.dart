@@ -1,7 +1,15 @@
 class MatchPlayerEntity {
   int? id;
   int? matchId;
-  int? playerId;
+  String? playerSeasonId;
+  int? fouls;
+  int? points;
 
-  MatchPlayerEntity({this.id, this.matchId, this.playerId});
+  MatchPlayerEntity({
+    this.id,
+    this.matchId,
+    this.playerSeasonId,
+    this.fouls,
+    this.points,
+  });
 }

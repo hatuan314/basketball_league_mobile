@@ -4,8 +4,8 @@ class MatchModel {
   int? id;
   int? roundId;
   DateTime? matchDate;
-  int? homeTeamId;
-  int? awayTeamId;
+  int? homeSeasonTeamId;
+  int? awaySeasonTeamId;
   String? homeColor;
   String? awayColor;
   int? attendance;
@@ -18,8 +18,8 @@ class MatchModel {
     this.id,
     this.roundId,
     this.matchDate,
-    this.homeTeamId,
-    this.awayTeamId,
+    this.homeSeasonTeamId,
+    this.awaySeasonTeamId,
     this.homeColor,
     this.awayColor,
     this.attendance,
@@ -33,8 +33,8 @@ class MatchModel {
     id = row[0] as int;
     roundId = row[1] as int;
     matchDate = row[2] as DateTime;
-    homeTeamId = row[3] as int;
-    awayTeamId = row[4] as int;
+    homeSeasonTeamId = row[3] as int;
+    awaySeasonTeamId = row[4] as int;
     homeColor = row[5] as String;
     awayColor = row[6] as String;
     attendance = row[7] as int;
@@ -48,8 +48,8 @@ class MatchModel {
     id = row.id;
     roundId = row.roundId;
     matchDate = row.matchDate;
-    homeTeamId = row.homeTeamId;
-    awayTeamId = row.awayTeamId;
+    homeSeasonTeamId = row.homeSeasonTeamId;
+    awaySeasonTeamId = row.awaySeasonTeamId;
     homeColor = row.homeColor;
     awayColor = row.awayColor;
     attendance = row.attendance;
@@ -64,8 +64,8 @@ class MatchModel {
       id: id,
       roundId: roundId,
       matchDate: matchDate,
-      homeTeamId: homeTeamId,
-      awayTeamId: awayTeamId,
+      homeSeasonTeamId: homeSeasonTeamId,
+      awaySeasonTeamId: awaySeasonTeamId,
       homeColor: homeColor,
       awayColor: awayColor,
       attendance: attendance,

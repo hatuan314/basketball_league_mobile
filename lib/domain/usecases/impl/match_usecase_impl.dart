@@ -20,10 +20,10 @@ class MatchUseCaseImpl implements MatchUseCase {
       if (match.matchDate == null) {
         return Left(Exception('Thời gian trận đấu không được để trống'));
       }
-      if (match.homeTeamId == null) {
+      if (match.homeSeasonTeamId == null) {
         return Left(Exception('ID đội nhà không được để trống'));
       }
-      if (match.awayTeamId == null) {
+      if (match.awaySeasonTeamId == null) {
         return Left(Exception('ID đội khách không được để trống'));
       }
       if (match.homeColor == null || match.homeColor!.isEmpty) {
@@ -32,7 +32,7 @@ class MatchUseCaseImpl implements MatchUseCase {
       if (match.awayColor == null || match.awayColor!.isEmpty) {
         return Left(Exception('Màu áo đội khách không được để trống'));
       }
-      if (match.homeTeamId == match.awayTeamId) {
+      if (match.homeSeasonTeamId == match.awaySeasonTeamId) {
         return Left(Exception('Đội nhà và đội khách không được trùng nhau'));
       }
       if (match.homeColor == match.awayColor) {
@@ -125,10 +125,10 @@ class MatchUseCaseImpl implements MatchUseCase {
       if (match.matchDate == null) {
         return Left(Exception('Thời gian trận đấu không được để trống'));
       }
-      if (match.homeTeamId == null) {
+      if (match.homeSeasonTeamId == null) {
         return Left(Exception('ID đội nhà không được để trống'));
       }
-      if (match.awayTeamId == null) {
+      if (match.awaySeasonTeamId == null) {
         return Left(Exception('ID đội khách không được để trống'));
       }
       if (match.homeColor == null || match.homeColor!.isEmpty) {
@@ -137,7 +137,7 @@ class MatchUseCaseImpl implements MatchUseCase {
       if (match.awayColor == null || match.awayColor!.isEmpty) {
         return Left(Exception('Màu áo đội khách không được để trống'));
       }
-      if (match.homeTeamId == match.awayTeamId) {
+      if (match.homeSeasonTeamId == match.awaySeasonTeamId) {
         return Left(Exception('Đội nhà và đội khách không được trùng nhau'));
       }
       if (match.homeColor == match.awayColor) {

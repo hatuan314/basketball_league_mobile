@@ -1,5 +1,6 @@
 import 'package:baseketball_league_mobile/common/postgresql/connect_database.dart';
 import 'package:baseketball_league_mobile/data/datasources/impl/match_api_impl.dart';
+import 'package:baseketball_league_mobile/data/datasources/impl/match_player_api_impl.dart';
 import 'package:baseketball_league_mobile/data/datasources/impl/match_referee_api_impl.dart';
 import 'package:baseketball_league_mobile/data/datasources/impl/player_api_impl.dart';
 import 'package:baseketball_league_mobile/data/datasources/impl/player_season_api_impl.dart';
@@ -11,6 +12,7 @@ import 'package:baseketball_league_mobile/data/datasources/impl/stadium_api_impl
 import 'package:baseketball_league_mobile/data/datasources/impl/team_api_impl.dart';
 import 'package:baseketball_league_mobile/data/datasources/impl/team_color_api_impl.dart';
 import 'package:baseketball_league_mobile/data/datasources/match_api.dart';
+import 'package:baseketball_league_mobile/data/datasources/match_player_api.dart';
 import 'package:baseketball_league_mobile/data/datasources/match_referee_api.dart';
 import 'package:baseketball_league_mobile/data/datasources/player_api.dart';
 import 'package:baseketball_league_mobile/data/datasources/player_season_api.dart';
@@ -23,6 +25,7 @@ import 'package:baseketball_league_mobile/data/datasources/team_api.dart';
 import 'package:baseketball_league_mobile/data/datasources/team_color_api.dart';
 import 'package:baseketball_league_mobile/data/repositories/match_referee_repository_impl.dart';
 import 'package:baseketball_league_mobile/data/repositories/match_repository_impl.dart';
+import 'package:baseketball_league_mobile/data/repositories/player_match_repository_impl.dart';
 import 'package:baseketball_league_mobile/data/repositories/player_repository_impl.dart';
 import 'package:baseketball_league_mobile/data/repositories/player_season_repository_impl.dart';
 import 'package:baseketball_league_mobile/data/repositories/referee_repository_impl.dart';
@@ -34,6 +37,7 @@ import 'package:baseketball_league_mobile/data/repositories/team_color_repositor
 import 'package:baseketball_league_mobile/data/repositories/team_repository_impl.dart';
 import 'package:baseketball_league_mobile/domain/repositories/match_referee_repository.dart';
 import 'package:baseketball_league_mobile/domain/repositories/match_repository.dart';
+import 'package:baseketball_league_mobile/domain/repositories/player_match_repository.dart';
 import 'package:baseketball_league_mobile/domain/repositories/player_repository.dart';
 import 'package:baseketball_league_mobile/domain/repositories/player_season_repository.dart';
 import 'package:baseketball_league_mobile/domain/repositories/referee_repository.dart';
@@ -45,6 +49,7 @@ import 'package:baseketball_league_mobile/domain/repositories/team_color_reposit
 import 'package:baseketball_league_mobile/domain/repositories/team_repository.dart';
 import 'package:baseketball_league_mobile/domain/usecases/impl/match_referee_usecase_impl.dart';
 import 'package:baseketball_league_mobile/domain/usecases/impl/match_usecase_impl.dart';
+import 'package:baseketball_league_mobile/domain/usecases/impl/player_match_usecase_impl.dart';
 import 'package:baseketball_league_mobile/domain/usecases/impl/player_season_usecase_impl.dart';
 import 'package:baseketball_league_mobile/domain/usecases/impl/player_usecase_impl.dart';
 import 'package:baseketball_league_mobile/domain/usecases/impl/referee_usecase_impl.dart';
@@ -55,6 +60,7 @@ import 'package:baseketball_league_mobile/domain/usecases/impl/stadium_usecase_i
 import 'package:baseketball_league_mobile/domain/usecases/impl/team_usecase_impl.dart';
 import 'package:baseketball_league_mobile/domain/usecases/match_referee_usecase.dart';
 import 'package:baseketball_league_mobile/domain/usecases/match_usecase.dart';
+import 'package:baseketball_league_mobile/domain/usecases/player_match_usecase.dart';
 import 'package:baseketball_league_mobile/domain/usecases/player_season_usecase.dart';
 import 'package:baseketball_league_mobile/domain/usecases/player_usecase.dart';
 import 'package:baseketball_league_mobile/domain/usecases/referee_usecase.dart';
@@ -131,6 +137,7 @@ void blocDependencies() {
     () => MatchDetailCubit(
       matchUseCase: sl<MatchUseCase>(),
       matchRefereeUseCase: sl<MatchRefereeUseCase>(),
+      playerMatchUseCase: sl<PlayerMatchUseCase>(),
     ),
   );
 
@@ -152,6 +159,9 @@ void usecaseDependencies() {
   );
   sl.registerFactory<MatchRefereeUseCase>(
     () => MatchRefereeUseCaseImpl(sl<MatchRefereeRepository>()),
+  );
+  sl.registerFactory<PlayerMatchUseCase>(
+    () => PlayerMatchUseCaseImpl(sl<PlayerMatchRepository>()),
   );
   sl.registerFactory<PlayerUsecase>(
     () => PlayerUsecaseImpl(playerRepository: sl<PlayerRepository>()),
@@ -191,6 +201,10 @@ void repositoryDependencies() {
   );
   sl.registerFactory<MatchRefereeRepository>(
     () => MatchRefereeRepositoryImpl(sl<MatchRefereeApi>(), sl<RefereeApi>()),
+  );
+  sl.registerFactory<PlayerMatchRepository>(
+    () =>
+        PlayerMatchRepositoryImpl(sl<MatchPlayerApi>(), sl<PlayerSeasonApi>()),
   );
   sl.registerFactory<PlayerRepository>(
     () => PlayerRepositoryImpl(playerApi: sl<PlayerApi>()),
@@ -237,6 +251,7 @@ void apiDependencies() {
   sl.registerLazySingleton<MatchApi>(() => MatchApiImpl());
   sl.registerLazySingleton<MatchRefereeApi>(() => MatchRefereeApiImpl());
   sl.registerLazySingleton<PlayerApi>(() => PlayerApiImpl());
+  sl.registerLazySingleton<MatchPlayerApi>(() => MatchPlayerApiImpl());
   sl.registerLazySingleton<PlayerSeasonApi>(() => PlayerSeasonApiImpl());
   sl.registerLazySingleton<RefereeApi>(() => RefereeApiImpl());
   sl.registerLazySingleton<RoundApi>(() => RoundApiImpl());

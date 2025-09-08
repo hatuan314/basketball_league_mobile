@@ -1,8 +1,11 @@
 import 'package:baseketball_league_mobile/common/app_utils.dart';
 import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/match_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/match_player_detail_entity.dart';
 import 'package:baseketball_league_mobile/domain/entities/match_referee_detail_entity.dart';
 import 'package:baseketball_league_mobile/domain/usecases/match_referee_usecase.dart';
 import 'package:baseketball_league_mobile/domain/usecases/match_usecase.dart';
+import 'package:baseketball_league_mobile/domain/usecases/player_match_usecase.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/bloc/match_detail_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -11,13 +14,18 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
   /// UseCase để quản lý trận đấu
   final MatchUseCase _matchUseCase;
   final MatchRefereeUseCase _matchRefereeUseCase;
+  final PlayerMatchUseCase _playerMatchUseCase;
+
+  MatchEntity? _match;
 
   /// Constructor
   MatchDetailCubit({
     required MatchUseCase matchUseCase,
     required MatchRefereeUseCase matchRefereeUseCase,
+    required PlayerMatchUseCase playerMatchUseCase,
   }) : _matchUseCase = matchUseCase,
        _matchRefereeUseCase = matchRefereeUseCase,
+       _playerMatchUseCase = playerMatchUseCase,
        super(MatchDetailState.loading());
 
   /// Thiết lập thông tin ban đầu và tải dữ liệu
@@ -30,19 +38,96 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
       ),
     );
     final results = await Future.wait([
+      _loadMatch(matchId),
       _loadMatchDetail(matchId, roundId),
       _loadMatchReferees(matchId),
     ]);
     if (!AppUtils.isNullEmptyList(results) &&
         results[0] != null &&
-        results[1] != null) {
+        results[1] != null &&
+        results[2] != null) {
+      _match = results[0] as MatchEntity;
+      final playersResult = await Future.wait([
+        _getTeamPlayersDetailInMatch(matchId, _match!.homeSeasonTeamId!),
+        _getTeamPlayersDetailInMatch(matchId, _match!.awaySeasonTeamId!),
+      ]);
+      if (!AppUtils.isNullEmptyList(playersResult) &&
+          playersResult[0] != null &&
+          playersResult[1] != null) {
+        emit(
+          state.copyWith(
+            match: results[1] as MatchDetailEntity,
+            referees: results[2] as List<MatchRefereeDetailEntity>,
+            homeTeamPlayers: playersResult[0] as List<MatchPlayerDetailEntity>,
+            awayTeamPlayers: playersResult[1] as List<MatchPlayerDetailEntity>,
+            status: MatchDetailStatus.initial,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<List<MatchPlayerDetailEntity>?> _getTeamPlayersDetailInMatch(
+    int matchId,
+    int teamId,
+  ) async {
+    try {
+      final result = await _playerMatchUseCase.getTeamPlayersDetailInMatch(
+        matchId,
+        teamId,
+      );
+
+      return result.fold(
+        (error) {
+          emit(
+            state.copyWith(
+              status: MatchDetailStatus.failure,
+              errorMessage: error.toString(),
+            ),
+          );
+          return null;
+        },
+        (players) {
+          return players;
+        },
+      );
+    } catch (e) {
       emit(
         state.copyWith(
-          match: results[0] as MatchDetailEntity,
-          referees: results[1] as List<MatchRefereeDetailEntity>,
-          status: MatchDetailStatus.initial,
+          status: MatchDetailStatus.failure,
+          errorMessage: 'Lỗi khi tải thông tin cầu thủ trong trận đấu: $e',
         ),
       );
+      return [];
+    }
+  }
+
+  Future<MatchEntity?> _loadMatch(int matchId) async {
+    try {
+      final result = await _matchUseCase.getMatchById(matchId);
+
+      return result.fold(
+        (error) {
+          emit(
+            state.copyWith(
+              status: MatchDetailStatus.failure,
+              errorMessage: error.toString(),
+            ),
+          );
+          return null;
+        },
+        (match) {
+          return match;
+        },
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: MatchDetailStatus.failure,
+          errorMessage: 'Lỗi khi tải thông tin trận đấu: $e',
+        ),
+      );
+      return null;
     }
   }
 
@@ -75,6 +160,7 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
           errorMessage: 'Lỗi khi tải thông tin trận đấu: $e',
         ),
       );
+      return null;
     }
   }
 
@@ -275,6 +361,150 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
         state.copyWith(
           status: MatchDetailStatus.updateFailure,
           errorMessage: 'Lỗi khi xóa trọng tài: $e',
+        ),
+      );
+    }
+  }
+
+  /// Tự động thêm cầu thủ vào trận đấu
+  Future<void> autoRegisterHomePlayersForMatch() async {
+    if (state.match == null || state.matchId == null) return;
+
+    emit(state.copyWith(status: MatchDetailStatus.loadingPlayers));
+
+    try {
+      // Lấy thông tin đội nhà và đội khách
+      final homeTeamId = state.match!.homeTeamId;
+
+      if (homeTeamId == null) {
+        emit(
+          state.copyWith(
+            status: MatchDetailStatus.loadPlayersFailure,
+            errorMessage: 'Không tìm thấy thông tin đội bóng',
+          ),
+        );
+        return;
+      }
+
+      // Gọi usecase để tự động thêm cầu thủ vào trận đấu
+      final result = await _playerMatchUseCase.autoRegisterPlayersForMatch(
+        state.matchId!,
+        _match!.homeSeasonTeamId!,
+      );
+
+      result.fold(
+        (error) => emit(
+          state.copyWith(
+            status: MatchDetailStatus.loadPlayersFailure,
+            errorMessage: 'Lỗi khi tự động thêm cầu thủ: ${error.toString()}',
+          ),
+        ),
+        (playerIds) async {
+          if (playerIds.isEmpty) {
+            emit(
+              state.copyWith(
+                status: MatchDetailStatus.loadPlayersFailure,
+                errorMessage: 'Không có cầu thủ nào được thêm vào trận đấu',
+              ),
+            );
+            return;
+          }
+          final homePlayers = await _getTeamPlayersDetailInMatch(
+            state.matchId!,
+            _match!.homeSeasonTeamId!,
+          );
+
+          emit(
+            state.copyWith(
+              status: MatchDetailStatus.loadPlayersSuccess,
+              registeredPlayerIds: playerIds,
+              homeTeamPlayers: homePlayers,
+            ),
+          );
+
+          // Sau 2 giây, đặt lại trạng thái về success
+          Future.delayed(const Duration(seconds: 2), () {
+            emit(state.copyWith(status: MatchDetailStatus.success));
+          });
+        },
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: MatchDetailStatus.loadPlayersFailure,
+          errorMessage: 'Lỗi khi tự động thêm cầu thủ: $e',
+        ),
+      );
+    }
+  }
+
+  Future<void> autoRegisterAwayPlayersForMatch() async {
+    if (state.match == null || state.matchId == null) return;
+
+    emit(state.copyWith(status: MatchDetailStatus.loadingPlayers));
+
+    try {
+      // Lấy thông tin đội khách
+      final awayTeamId = state.match!.awayTeamId;
+
+      if (awayTeamId == null) {
+        emit(
+          state.copyWith(
+            status: MatchDetailStatus.loadPlayersFailure,
+            errorMessage: 'Không tìm thấy thông tin đội bóng',
+          ),
+        );
+        return;
+      }
+
+      // Gọi usecase để tự động thêm cầu thủ vào trận đấu
+      final result = await _playerMatchUseCase.autoRegisterPlayersForMatch(
+        state.matchId!,
+        _match!.awaySeasonTeamId!,
+      );
+
+      result.fold(
+        (error) => emit(
+          state.copyWith(
+            status: MatchDetailStatus.loadPlayersFailure,
+            errorMessage: 'Lỗi khi tự động thêm cầu thủ: ${error.toString()}',
+          ),
+        ),
+        (playerIds) async {
+          if (playerIds.isEmpty) {
+            emit(
+              state.copyWith(
+                status: MatchDetailStatus.loadPlayersFailure,
+                errorMessage: 'Không có cầu thủ nào được thêm vào trận đấu',
+              ),
+            );
+            return;
+          }
+
+          final awayPlayers = await _getTeamPlayersDetailInMatch(
+            state.matchId!,
+            _match!.awaySeasonTeamId!,
+          );
+
+          emit(
+            state.copyWith(
+              status: MatchDetailStatus.loadPlayersSuccess,
+              registeredPlayerIds: playerIds,
+              awayTeamPlayers: awayPlayers,
+            ),
+          );
+
+          // Sau 2 giây, đặt lại trạng thái về success
+          Future.delayed(const Duration(seconds: 2), () {
+            emit(state.copyWith(status: MatchDetailStatus.success));
+          });
+        },
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: MatchDetailStatus.loadPlayersFailure,
+          errorMessage: 'Lỗi khi tự động thêm cầu thủ: $e',
         ),
       );
     }

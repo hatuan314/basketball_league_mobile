@@ -1,6 +1,6 @@
 import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/match_player_detail_entity.dart';
 import 'package:baseketball_league_mobile/domain/entities/match_referee_detail_entity.dart';
-import 'package:equatable/equatable.dart';
 
 /// Trạng thái của màn hình chi tiết trận đấu
 enum MatchDetailStatus {
@@ -24,10 +24,19 @@ enum MatchDetailStatus {
 
   /// Cập nhật dữ liệu thất bại
   updateFailure,
+
+  /// Đang tải danh sách cầu thủ
+  loadingPlayers,
+
+  /// Tải danh sách cầu thủ thành công
+  loadPlayersSuccess,
+
+  /// Tải danh sách cầu thủ thất bại
+  loadPlayersFailure,
 }
 
 /// State của màn hình chi tiết trận đấu
-class MatchDetailState extends Equatable {
+class MatchDetailState {
   /// ID của trận đấu
   final int? matchId;
 
@@ -39,6 +48,15 @@ class MatchDetailState extends Equatable {
 
   /// Thông tin trọng tài của trận đấu
   final List<MatchRefereeDetailEntity>? referees;
+
+  /// Danh sách thông tin chi tiết cầu thủ của đội nhà
+  final List<MatchPlayerDetailEntity>? homeTeamPlayers;
+
+  /// Danh sách thông tin chi tiết cầu thủ của đội khách
+  final List<MatchPlayerDetailEntity>? awayTeamPlayers;
+
+  /// Danh sách ID cầu thủ đã được thêm vào trận đấu
+  final List<int>? registeredPlayerIds;
 
   /// Trạng thái của màn hình
   final MatchDetailStatus status;
@@ -52,6 +70,9 @@ class MatchDetailState extends Equatable {
     this.roundId,
     this.match,
     this.referees,
+    this.homeTeamPlayers,
+    this.awayTeamPlayers,
+    this.registeredPlayerIds,
     this.status = MatchDetailStatus.initial,
     this.errorMessage,
   });
@@ -70,6 +91,9 @@ class MatchDetailState extends Equatable {
     int? roundId,
     MatchDetailEntity? match,
     List<MatchRefereeDetailEntity>? referees,
+    List<MatchPlayerDetailEntity>? homeTeamPlayers,
+    List<MatchPlayerDetailEntity>? awayTeamPlayers,
+    List<int>? registeredPlayerIds,
     MatchDetailStatus? status,
     String? errorMessage,
   }) {
@@ -78,11 +102,11 @@ class MatchDetailState extends Equatable {
       roundId: roundId ?? this.roundId,
       match: match ?? this.match,
       referees: referees ?? this.referees,
+      homeTeamPlayers: homeTeamPlayers ?? this.homeTeamPlayers,
+      awayTeamPlayers: awayTeamPlayers ?? this.awayTeamPlayers,
+      registeredPlayerIds: registeredPlayerIds ?? this.registeredPlayerIds,
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
-
-  @override
-  List<Object?> get props => [matchId, roundId, match, status, errorMessage];
 }

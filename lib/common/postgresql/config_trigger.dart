@@ -301,7 +301,7 @@ class ConfigTrigger {
 
     // Xóa function nếu đã tồn tại
     final dropFunction = '''
-      DROP FUNCTION IF EXISTS check_max_players_per_match();
+      DROP FUNCTION IF EXISTS check_max_players_per_match() CASCADE;
     ''';
     await _conn.execute(dropFunction);
 
@@ -312,38 +312,50 @@ class ConfigTrigger {
       LANGUAGE plpgsql
       AS E'
       DECLARE
-        home_count INT;
-        away_count INT;
+        player_count INT;
         match_home_team_id INT;
         match_away_team_id INT;
+        player_team_id INT;
       BEGIN
         -- Lấy thông tin đội nhà và đội khách của trận đấu
         SELECT home_team_id, away_team_id INTO match_home_team_id, match_away_team_id
         FROM match
         WHERE match_id = NEW.match_id;
 
-        -- Đếm số cầu thủ của đội nhà trong trận đấu
-        SELECT COUNT(*) INTO home_count
-        FROM match_player mp
-          JOIN player_season ps ON mp.player_id = ps.player_season_id
-        WHERE mp.match_id = NEW.match_id AND ps.team_id = match_home_team_id;
+        -- Lấy thông tin đội bóng của cầu thủ đang được thêm vào
+        SELECT season_team_id INTO player_team_id
+        FROM player_season
+        WHERE player_season_id = NEW.player_id;
 
-        -- Đếm số cầu thủ của đội khách trong trận đấu
-        SELECT COUNT(*) INTO away_count
-        FROM match_player mp
-          JOIN player_season ps ON mp.player_id = ps.player_season_id
-        WHERE mp.match_id = NEW.match_id AND ps.team_id = match_away_team_id;
+        -- Kiểm tra xem cầu thủ thuộc đội nhà hay đội khách
+        IF player_team_id = match_home_team_id THEN
+          -- Đếm số cầu thủ của đội nhà trong trận đấu (không bao gồm cầu thủ mới)
+          SELECT COUNT(*) INTO player_count
+          FROM match_player mp
+            JOIN player_season ps ON mp.player_id = ps.player_season_id
+          WHERE mp.match_id = NEW.match_id AND ps.season_team_id = match_home_team_id;
 
-        -- Kiểm tra số lượng cầu thủ
-        IF home_count > 12 THEN
-          RAISE EXCEPTION ''Đội nhà chỉ được đăng ký tối đa 12 cầu thủ cho một trận đấu'';
+        -- Kiểm tra số lượng cầu thủ đội nhà
+        IF player_count >= 12 THEN
+          RAISE EXCEPTION ''BL-E006: Đội nhà chỉ được đăng ký tối đa 12 cầu thủ cho một trận đấu'';
+        END IF;
+        ELSIF player_team_id = match_away_team_id THEN
+                -- Đếm số cầu thủ của đội khách trong trận đấu (không bao gồm cầu thủ mới)
+        SELECT COUNT(*) INTO player_count
+        FROM match_player mp
+                JOIN player_season ps ON mp.player_id = ps.player_season_id
+        WHERE mp.match_id = NEW.match_id AND ps.season_team_id = match_away_team_id;
+
+        -- Kiểm tra số lượng cầu thủ đội khách
+        IF player_count >= 12 THEN
+          RAISE EXCEPTION ''BL-E007: Đội khách chỉ được đăng ký tối đa 12 cầu thủ cho một trận đấu'';
+        END IF;
+        ELSE
+          -- Cầu thủ không thuộc đội nhà hoặc đội khách
+          RAISE EXCEPTION ''BL-E025: Cầu thủ không thuộc đội tham gia trận đấu'';
         END IF;
 
-        IF away_count > 12 THEN
-          RAISE EXCEPTION ''Đội khách chỉ được đăng ký tối đa 12 cầu thủ cho một trận đấu'';
-        END IF;
-
-        RETURN NEW;
+      RETURN NEW;
       END;'
     ''';
     await _conn.execute(createFunction);
