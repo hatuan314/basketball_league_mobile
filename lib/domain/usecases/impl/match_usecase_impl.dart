@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.dart';
 import 'package:baseketball_league_mobile/domain/entities/match_entity.dart';
 import 'package:baseketball_league_mobile/domain/repositories/match_repository.dart';
@@ -171,6 +173,43 @@ class MatchUseCaseImpl implements MatchUseCase {
       );
     } catch (e) {
       return Left(Exception('Lỗi khi lấy chi tiết trận đấu theo vòng đấu: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, MatchEntity>> simulateMatchScore({
+    required int matchId,
+    int homeScore = 0,
+    int awayScore = 0,
+    int homeFouls = 0,
+    int awayFouls = 0,
+    int minAttendance = 1000,
+    int maxAttendance = 20000,
+  }) async {
+    try {
+      // Kiểm tra ID trận đấu
+      if (matchId <= 0) {
+        return Left(Exception('ID trận đấu không hợp lệ'));
+      }
+
+      // Tạo đối tượng Random
+      final random = Random();
+
+      // Tạo số lượng người xem ngẫu nhiên
+      final attendance =
+          minAttendance + random.nextInt(maxAttendance - minAttendance + 1);
+
+      // Gọi repository để cập nhật tỉ số, số lỗi và số lượng người xem
+      return await _matchRepository.updateMatchScore(
+        matchId: matchId,
+        homeScore: homeScore,
+        awayScore: awayScore,
+        homeFouls: homeFouls,
+        awayFouls: awayFouls,
+        attendance: attendance,
+      );
+    } catch (e) {
+      return Left(Exception('Lỗi khi giả lập tỉ số và số lỗi trận đấu: $e'));
     }
   }
 }

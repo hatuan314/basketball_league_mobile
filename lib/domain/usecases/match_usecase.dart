@@ -30,4 +30,21 @@ abstract class MatchUseCase {
     int roundId, {
     int? matchId,
   });
+
+  /// Cập nhật tỉ số và số lỗi cho trận đấu bằng cách giả lập
+  /// [matchId] là ID của trận đấu cần cập nhật
+  /// [minScore] là điểm số tối thiểu (mặc định là 60)
+  /// [maxScore] là điểm số tối đa (mặc định là 120)
+  /// [minFouls] là số lỗi tối thiểu (mặc định là 5)
+  /// [maxFouls] là số lỗi tối đa (mặc định là 30)
+  /// Trả về thông tin trận đấu sau khi cập nhật
+  Future<Either<Exception, MatchEntity>> simulateMatchScore({
+    required int matchId,
+    int homeScore = 0,
+    int awayScore = 0,
+    int homeFouls = 0,
+    int awayFouls = 0,
+    int minAttendance = 1000,
+    int maxAttendance = 20000,
+  });
 }

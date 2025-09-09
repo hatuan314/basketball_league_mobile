@@ -117,4 +117,47 @@ class MatchRepositoryImpl implements MatchRepository {
       return Left(Exception('Lỗi khi lấy chi tiết trận đấu theo vòng đấu: $e'));
     }
   }
+  
+  @override
+  Future<Either<Exception, MatchEntity>> updateMatchScore({
+    required int matchId,
+    required int homeScore,
+    required int awayScore,
+    int? homeFouls,
+    int? awayFouls,
+    int? attendance,
+  }) async {
+    try {
+      // Kiểm tra điểm số hợp lệ (không âm)
+      if (homeScore < 0 || awayScore < 0) {
+        return Left(Exception('Điểm số không được âm'));
+      }
+      
+      // Kiểm tra số lỗi hợp lệ (không âm) nếu được cung cấp
+      if ((homeFouls != null && homeFouls < 0) || (awayFouls != null && awayFouls < 0)) {
+        return Left(Exception('Số lỗi không được âm'));
+      }
+      
+      // Kiểm tra không được hòa (điểm số phải khác nhau)
+      if (homeScore == awayScore) {
+        return Left(Exception('Kết quả trận đấu không được hòa, điểm số phải khác nhau'));
+      }
+      
+      final result = await _matchApi.updateMatchScore(
+        matchId: matchId,
+        homeScore: homeScore,
+        awayScore: awayScore,
+        homeFouls: homeFouls,
+        awayFouls: awayFouls,
+        attendance: attendance,
+      );
+
+      return result.fold(
+        (error) => Left(error),
+        (model) => Right(model.toEntity()),
+      );
+    } catch (e) {
+      return Left(Exception('Lỗi khi cập nhật tỉ số và số lỗi trận đấu: $e'));
+    }
+  }
 }

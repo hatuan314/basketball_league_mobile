@@ -29,4 +29,22 @@ abstract class MatchApi {
     int roundId, {
     int? matchId,
   });
+
+  /// Cập nhật tỉ số và số lỗi của trận đấu
+  /// [matchId] là ID của trận đấu cần cập nhật
+  /// [homeScore] là điểm số của đội nhà
+  /// [awayScore] là điểm số của đội khách
+  /// [homeFouls] là số lỗi của đội nhà (tùy chọn)
+  /// [awayFouls] là số lỗi của đội khách (tùy chọn)
+  /// [attendance] là số lượng người xem (tùy chọn)
+  /// Trả về thông tin trận đấu sau khi cập nhật
+  /// Lưu ý: Kết quả trận đấu chỉ có thắng hoặc thua, không có hòa
+  Future<Either<Exception, MatchModel>> updateMatchScore({
+    required int matchId,
+    required int homeScore,
+    required int awayScore,
+    int? homeFouls,
+    int? awayFouls,
+    int? attendance,
+  });
 }

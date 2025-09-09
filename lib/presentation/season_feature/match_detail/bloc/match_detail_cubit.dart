@@ -2,31 +2,23 @@ import 'package:baseketball_league_mobile/common/app_utils.dart';
 import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.dart';
 import 'package:baseketball_league_mobile/domain/entities/match_entity.dart';
 import 'package:baseketball_league_mobile/domain/entities/match_player_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/match_player_stats_entity.dart';
 import 'package:baseketball_league_mobile/domain/entities/match_referee_detail_entity.dart';
-import 'package:baseketball_league_mobile/domain/usecases/match_referee_usecase.dart';
-import 'package:baseketball_league_mobile/domain/usecases/match_usecase.dart';
-import 'package:baseketball_league_mobile/domain/usecases/player_match_usecase.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/bloc/match_detail_state.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/service/match_detail_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Cubit để quản lý state của màn hình chi tiết trận đấu
 class MatchDetailCubit extends Cubit<MatchDetailState> {
-  /// UseCase để quản lý trận đấu
-  final MatchUseCase _matchUseCase;
-  final MatchRefereeUseCase _matchRefereeUseCase;
-  final PlayerMatchUseCase _playerMatchUseCase;
+  /// Service để xử lý logic liên quan đến chi tiết trận đấu
+  final MatchDetailService _matchDetailService;
 
   MatchEntity? _match;
 
   /// Constructor
-  MatchDetailCubit({
-    required MatchUseCase matchUseCase,
-    required MatchRefereeUseCase matchRefereeUseCase,
-    required PlayerMatchUseCase playerMatchUseCase,
-  }) : _matchUseCase = matchUseCase,
-       _matchRefereeUseCase = matchRefereeUseCase,
-       _playerMatchUseCase = playerMatchUseCase,
-       super(MatchDetailState.loading());
+  MatchDetailCubit({required MatchDetailService matchDetailService})
+    : _matchDetailService = matchDetailService,
+      super(MatchDetailState.loading());
 
   /// Thiết lập thông tin ban đầu và tải dữ liệu
   void initial({required int matchId, required int roundId}) async {
@@ -72,7 +64,7 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
     int teamId,
   ) async {
     try {
-      final result = await _playerMatchUseCase.getTeamPlayersDetailInMatch(
+      final result = await _matchDetailService.getTeamPlayerDetailsInMatch(
         matchId,
         teamId,
       );
@@ -104,7 +96,7 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
 
   Future<MatchEntity?> _loadMatch(int matchId) async {
     try {
-      final result = await _matchUseCase.getMatchById(matchId);
+      final result = await _matchDetailService.getMatchById(matchId);
 
       return result.fold(
         (error) {
@@ -134,10 +126,7 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
   /// Tải thông tin chi tiết của trận đấu
   Future<MatchDetailEntity?> _loadMatchDetail(int matchId, int roundId) async {
     try {
-      final result = await _matchUseCase.getMatchDetailByRoundId(
-        roundId,
-        matchId: state.matchId,
-      );
+      final result = await _matchDetailService.getMatchDetail(matchId, roundId);
 
       return result.fold(
         (error) {
@@ -149,8 +138,8 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
           );
           return null;
         },
-        (matches) {
-          return matches.first;
+        (matchDetail) {
+          return matchDetail;
         },
       );
     } catch (e) {
@@ -177,58 +166,46 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
     emit(state.copyWith(status: MatchDetailStatus.updating));
 
     try {
-      // Tạo bản sao của match với các giá trị mới
-      final updatedMatch = MatchDetailEntity(
-        matchId: state.match!.matchId,
-        matchDate: state.match!.matchDate,
-        roundId: state.match!.roundId,
-        roundNo: state.match!.roundNo,
-        seasonId: state.match!.seasonId,
-        seasonName: state.match!.seasonName,
-        homeTeamId: state.match!.homeTeamId,
-        awayTeamId: state.match!.awayTeamId,
-        homeTeamName: state.match!.homeTeamName,
-        awayTeamName: state.match!.awayTeamName,
-        homeColor: state.match!.homeColor,
-        awayColor: state.match!.awayColor,
-        homePoints: homePoints,
-        awayPoints: awayPoints,
+      // Gọi service để cập nhật tỉ số và số lỗi
+      final result = await _matchDetailService.updateMatchScore(
+        matchId: state.matchId!,
+        homeScore: homePoints,
+        awayScore: awayPoints,
         homeFouls: homeFouls,
         awayFouls: awayFouls,
-        attendance: attendance,
-        stadiumId: state.match!.stadiumId,
-        stadiumName: state.match!.stadiumName,
-        ticketPrice: state.match!.ticketPrice,
-        // Cập nhật đội thắng dựa trên điểm số mới
-        winnerTeamId:
-            homePoints > awayPoints
-                ? state.match!.homeTeamId
-                : awayPoints > homePoints
-                ? state.match!.awayTeamId
-                : null,
-        winnerTeamName:
-            homePoints > awayPoints
-                ? state.match!.homeTeamName
-                : awayPoints > homePoints
-                ? state.match!.awayTeamName
-                : null,
       );
 
-      // Gọi API để cập nhật trận đấu
-      // Lưu ý: Cần triển khai phương thức updateMatchDetail trong MatchUseCase
-      // Hiện tại chỉ mô phỏng việc cập nhật thành công
-      await Future.delayed(const Duration(seconds: 1));
+      return result.fold(
+        (error) {
+          emit(
+            state.copyWith(
+              status: MatchDetailStatus.updateFailure,
+              errorMessage: 'Lỗi khi cập nhật trận đấu: ${error.toString()}',
+            ),
+          );
+        },
+        (updatedMatch) async {
+          // Tải lại thông tin chi tiết trận đấu
+          final matchDetail = await _loadMatchDetail(
+            state.matchId!,
+            state.roundId!,
+          );
 
-      emit(
-        state.copyWith(
-          match: updatedMatch,
-          status: MatchDetailStatus.updateSuccess,
-        ),
+          if (matchDetail != null) {
+            emit(
+              state.copyWith(
+                match: matchDetail,
+                status: MatchDetailStatus.updateSuccess,
+              ),
+            );
+
+            // Sau 2 giây, đặt lại trạng thái về success
+            Future.delayed(const Duration(seconds: 2), () {
+              emit(state.copyWith(status: MatchDetailStatus.success));
+            });
+          }
+        },
       );
-
-      // Sau 2 giây, đặt lại trạng thái về success
-      await Future.delayed(const Duration(seconds: 2));
-      emit(state.copyWith(status: MatchDetailStatus.success));
     } catch (e) {
       emit(
         state.copyWith(
@@ -251,9 +228,7 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
     int matchId,
   ) async {
     try {
-      final result = await _matchRefereeUseCase.getMatchRefereeDetailsByMatchId(
-        matchId,
-      );
+      final result = await _matchDetailService.getMatchReferees(matchId);
 
       return result.fold(
         (error) {
@@ -288,7 +263,7 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
     emit(state.copyWith(status: MatchDetailStatus.updating));
 
     try {
-      final result = await _matchRefereeUseCase.generateMatchReferees(
+      final result = await _matchDetailService.generateMatchReferees(
         roundId: roundId,
         matchId: matchId,
       );
@@ -335,7 +310,7 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
     emit(state.copyWith(status: MatchDetailStatus.updating));
 
     try {
-      final result = await _matchRefereeUseCase.deleteMatchReferee(id);
+      final result = await _matchDetailService.deleteMatchReferee(id);
 
       result.fold(
         (error) => emit(
@@ -386,8 +361,8 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
         return;
       }
 
-      // Gọi usecase để tự động thêm cầu thủ vào trận đấu
-      final result = await _playerMatchUseCase.autoRegisterPlayersForMatch(
+      // Gọi service để tự động thêm cầu thủ vào trận đấu
+      final result = await _matchDetailService.autoRegisterPlayersForMatch(
         state.matchId!,
         _match!.homeSeasonTeamId!,
       );
@@ -417,7 +392,8 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
           emit(
             state.copyWith(
               status: MatchDetailStatus.loadPlayersSuccess,
-              registeredPlayerIds: playerIds,
+              registeredPlayerIds:
+                  playerIds.map((id) => id.toString()).toList(),
               homeTeamPlayers: homePlayers,
             ),
           );
@@ -457,8 +433,8 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
         return;
       }
 
-      // Gọi usecase để tự động thêm cầu thủ vào trận đấu
-      final result = await _playerMatchUseCase.autoRegisterPlayersForMatch(
+      // Gọi service để tự động thêm cầu thủ vào trận đấu
+      final result = await _matchDetailService.autoRegisterPlayersForMatch(
         state.matchId!,
         _match!.awaySeasonTeamId!,
       );
@@ -489,7 +465,8 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
           emit(
             state.copyWith(
               status: MatchDetailStatus.loadPlayersSuccess,
-              registeredPlayerIds: playerIds,
+              registeredPlayerIds:
+                  playerIds.map((id) => id.toString()).toList(),
               awayTeamPlayers: awayPlayers,
             ),
           );
@@ -505,6 +482,86 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
         state.copyWith(
           status: MatchDetailStatus.loadPlayersFailure,
           errorMessage: 'Lỗi khi tự động thêm cầu thủ: $e',
+        ),
+      );
+    }
+  }
+
+  /// Giả lập tỉ số và số lỗi cho trận đấu
+  Future<void> simulateMatchScore() async {
+    if (state.matchId == null) return;
+
+    emit(state.copyWith(status: MatchDetailStatus.updating));
+
+    try {
+      final playerStatsResult = await _matchDetailService.simulatePlayerStats(
+        matchId: state.matchId!,
+      );
+      playerStatsResult.fold((error) => null, (playerStatsMap) async {
+        final result = await _matchDetailService.simulateMatchScore(
+          matchId: state.matchId!,
+          homePlayerStats:
+              playerStatsMap['home'] as List<MatchPlayerStatsEntity>,
+          awayPlayerStats:
+              playerStatsMap['away'] as List<MatchPlayerStatsEntity>,
+        );
+
+        return result.fold(
+          (error) {
+            emit(
+              state.copyWith(
+                status: MatchDetailStatus.updateFailure,
+                errorMessage:
+                    'Lỗi khi giả lập tỉ số trận đấu: ${error.toString()}',
+              ),
+            );
+          },
+          (updatedMatch) async {
+            // Tải lại thông tin chi tiết trận đấu
+            final matchDetail = await _loadMatchDetail(
+              state.matchId!,
+              state.roundId!,
+            );
+
+            if (matchDetail != null) {
+              final playersResult = await Future.wait([
+                _getTeamPlayersDetailInMatch(
+                  matchDetail.matchId!,
+                  _match!.homeSeasonTeamId!,
+                ),
+                _getTeamPlayersDetailInMatch(
+                  state.matchId!,
+                  _match!.awaySeasonTeamId!,
+                ),
+              ]);
+              if (!AppUtils.isNullEmptyList(playersResult) &&
+                  playersResult[0] != null &&
+                  playersResult[1] != null) {
+                emit(
+                  state.copyWith(
+                    match: matchDetail,
+                    homeTeamPlayers:
+                        playersResult[0] as List<MatchPlayerDetailEntity>,
+                    awayTeamPlayers:
+                        playersResult[1] as List<MatchPlayerDetailEntity>,
+                    status: MatchDetailStatus.updateSuccess,
+                  ),
+                );
+              }
+
+              // Sau 2 giây, đặt lại trạng thái về success
+              Future.delayed(const Duration(seconds: 2), () {
+                emit(state.copyWith(status: MatchDetailStatus.success));
+              });
+            }
+          },
+        );
+      });
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: MatchDetailStatus.updateFailure,
+          errorMessage: 'Lỗi khi giả lập tỉ số trận đấu: $e',
         ),
       );
     }

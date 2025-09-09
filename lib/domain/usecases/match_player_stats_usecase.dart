@@ -1,27 +1,27 @@
-import 'package:baseketball_league_mobile/data/models/match_player_stats_model.dart';
+import 'package:baseketball_league_mobile/domain/entities/match_player_stats_entity.dart';
 import 'package:dartz/dartz.dart';
 
-/// API để quản lý thống kê cầu thủ trong trận đấu
-abstract class MatchPlayerStatsApi {
+/// UseCase để quản lý thống kê cầu thủ trong trận đấu
+abstract class MatchPlayerStatsUseCase {
   /// Lấy thống kê chi tiết của một cầu thủ trong trận đấu
   /// [matchPlayerStatsId] là ID của bản ghi thống kê
-  Future<Either<Exception, MatchPlayerStatsModel?>> getMatchPlayerStatsById(
+  Future<Either<Exception, MatchPlayerStatsEntity?>> getMatchPlayerStatsById(
     int matchPlayerStatsId,
   );
 
   /// Lấy thống kê chi tiết của một cầu thủ trong trận đấu
   /// [matchPlayerId] là ID của cầu thủ
-  Future<Either<Exception, MatchPlayerStatsModel?>>
+  Future<Either<Exception, MatchPlayerStatsEntity?>>
   getMatchPlayerStatsByMatchPlayerId(int matchPlayerId);
 
   /// Tạo mới thống kê cầu thủ trong trận đấu
-  Future<Either<Exception, MatchPlayerStatsModel>> createMatchPlayerStats(
-    MatchPlayerStatsModel stats,
+  Future<Either<Exception, MatchPlayerStatsEntity>> createMatchPlayerStats(
+    MatchPlayerStatsEntity stats,
   );
 
   /// Cập nhật thống kê cầu thủ trong trận đấu
-  Future<Either<Exception, MatchPlayerStatsModel>> updateMatchPlayerStats(
-    MatchPlayerStatsModel stats,
+  Future<Either<Exception, MatchPlayerStatsEntity>> updateMatchPlayerStats(
+    MatchPlayerStatsEntity stats,
   );
 
   /// Xóa thống kê cầu thủ trong trận đấu
@@ -33,7 +33,7 @@ abstract class MatchPlayerStatsApi {
   /// Cập nhật điểm số cho cầu thủ
   /// [matchPlayerStatsId] là ID của bản ghi thống kê
   /// [points] là số điểm cần thêm vào
-  Future<Either<Exception, MatchPlayerStatsModel>> addPoints({
+  Future<Either<Exception, MatchPlayerStatsEntity>> addPoints({
     required int matchPlayerStatsId,
     required int points,
   });
@@ -41,7 +41,7 @@ abstract class MatchPlayerStatsApi {
   /// Cập nhật số lỗi cho cầu thủ
   /// [matchPlayerStatsId] là ID của bản ghi thống kê
   /// [fouls] là số lỗi cần thêm vào
-  Future<Either<Exception, MatchPlayerStatsModel>> addFouls({
+  Future<Either<Exception, MatchPlayerStatsEntity>> addFouls({
     required int matchPlayerStatsId,
     required int fouls,
   });

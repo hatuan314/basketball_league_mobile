@@ -56,7 +56,7 @@ class MatchDetailState {
   final List<MatchPlayerDetailEntity>? awayTeamPlayers;
 
   /// Danh sách ID cầu thủ đã được thêm vào trận đấu
-  final List<int>? registeredPlayerIds;
+  final List<String>? registeredPlayerIds;
 
   /// Trạng thái của màn hình
   final MatchDetailStatus status;
@@ -93,7 +93,7 @@ class MatchDetailState {
     List<MatchRefereeDetailEntity>? referees,
     List<MatchPlayerDetailEntity>? homeTeamPlayers,
     List<MatchPlayerDetailEntity>? awayTeamPlayers,
-    List<int>? registeredPlayerIds,
+    List<String>? registeredPlayerIds,
     MatchDetailStatus? status,
     String? errorMessage,
   }) {

@@ -1,6 +1,7 @@
 import 'package:baseketball_league_mobile/common/postgresql/connect_database.dart';
 import 'package:baseketball_league_mobile/data/datasources/impl/match_api_impl.dart';
 import 'package:baseketball_league_mobile/data/datasources/impl/match_player_api_impl.dart';
+import 'package:baseketball_league_mobile/data/datasources/impl/match_player_stats_api_impl.dart';
 import 'package:baseketball_league_mobile/data/datasources/impl/match_referee_api_impl.dart';
 import 'package:baseketball_league_mobile/data/datasources/impl/player_api_impl.dart';
 import 'package:baseketball_league_mobile/data/datasources/impl/player_season_api_impl.dart';
@@ -13,6 +14,7 @@ import 'package:baseketball_league_mobile/data/datasources/impl/team_api_impl.da
 import 'package:baseketball_league_mobile/data/datasources/impl/team_color_api_impl.dart';
 import 'package:baseketball_league_mobile/data/datasources/match_api.dart';
 import 'package:baseketball_league_mobile/data/datasources/match_player_api.dart';
+import 'package:baseketball_league_mobile/data/datasources/match_player_stats_api.dart';
 import 'package:baseketball_league_mobile/data/datasources/match_referee_api.dart';
 import 'package:baseketball_league_mobile/data/datasources/player_api.dart';
 import 'package:baseketball_league_mobile/data/datasources/player_season_api.dart';
@@ -23,6 +25,7 @@ import 'package:baseketball_league_mobile/data/datasources/season_team_api.dart'
 import 'package:baseketball_league_mobile/data/datasources/stadium_api.dart';
 import 'package:baseketball_league_mobile/data/datasources/team_api.dart';
 import 'package:baseketball_league_mobile/data/datasources/team_color_api.dart';
+import 'package:baseketball_league_mobile/data/repositories/match_player_stats_repository_impl.dart';
 import 'package:baseketball_league_mobile/data/repositories/match_referee_repository_impl.dart';
 import 'package:baseketball_league_mobile/data/repositories/match_repository_impl.dart';
 import 'package:baseketball_league_mobile/data/repositories/player_match_repository_impl.dart';
@@ -35,6 +38,7 @@ import 'package:baseketball_league_mobile/data/repositories/season_team_reposito
 import 'package:baseketball_league_mobile/data/repositories/stadium_repository_impl.dart';
 import 'package:baseketball_league_mobile/data/repositories/team_color_repository_impl.dart';
 import 'package:baseketball_league_mobile/data/repositories/team_repository_impl.dart';
+import 'package:baseketball_league_mobile/domain/repositories/match_player_stats_repository.dart';
 import 'package:baseketball_league_mobile/domain/repositories/match_referee_repository.dart';
 import 'package:baseketball_league_mobile/domain/repositories/match_repository.dart';
 import 'package:baseketball_league_mobile/domain/repositories/player_match_repository.dart';
@@ -47,6 +51,7 @@ import 'package:baseketball_league_mobile/domain/repositories/season_team_reposi
 import 'package:baseketball_league_mobile/domain/repositories/stadium_repository.dart';
 import 'package:baseketball_league_mobile/domain/repositories/team_color_repository.dart';
 import 'package:baseketball_league_mobile/domain/repositories/team_repository.dart';
+import 'package:baseketball_league_mobile/domain/usecases/impl/match_player_stats_usecase_impl.dart';
 import 'package:baseketball_league_mobile/domain/usecases/impl/match_referee_usecase_impl.dart';
 import 'package:baseketball_league_mobile/domain/usecases/impl/match_usecase_impl.dart';
 import 'package:baseketball_league_mobile/domain/usecases/impl/player_match_usecase_impl.dart';
@@ -58,6 +63,7 @@ import 'package:baseketball_league_mobile/domain/usecases/impl/season_team_useca
 import 'package:baseketball_league_mobile/domain/usecases/impl/season_usecase_impl.dart';
 import 'package:baseketball_league_mobile/domain/usecases/impl/stadium_usecase_impl.dart';
 import 'package:baseketball_league_mobile/domain/usecases/impl/team_usecase_impl.dart';
+import 'package:baseketball_league_mobile/domain/usecases/match_player_stats_usecase.dart';
 import 'package:baseketball_league_mobile/domain/usecases/match_referee_usecase.dart';
 import 'package:baseketball_league_mobile/domain/usecases/match_usecase.dart';
 import 'package:baseketball_league_mobile/domain/usecases/player_match_usecase.dart';
@@ -75,6 +81,7 @@ import 'package:baseketball_league_mobile/presentation/referee_feature/referee_d
 import 'package:baseketball_league_mobile/presentation/referee_feature/referee_form/bloc/referee_form_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/referee_feature/referee_list/bloc/referee_list_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/bloc/match_detail_cubit.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/service/match_detail_service.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/round/round_detail/bloc/round_detail_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/round/round_list/bloc/round_list_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/season_list/bloc/season_list_cubit.dart';
@@ -90,9 +97,24 @@ final sl = GetIt.instance;
 void configureDependencies() {
   sl.registerLazySingleton<PostgresConnection>(() => PostgresConnection());
   blocDependencies();
+  serviceDependencies();
   usecaseDependencies();
   repositoryDependencies();
   apiDependencies();
+}
+
+void serviceDependencies() {
+  // Đăng ký các service
+  sl.registerFactory<MatchDetailService>(
+    () => MatchDetailService(
+      matchUseCase: sl<MatchUseCase>(),
+      matchRefereeUseCase: sl<MatchRefereeUseCase>(),
+      playerMatchUseCase: sl<PlayerMatchUseCase>(),
+      matchRepository: sl<MatchRepository>(),
+      stadiumUseCase: sl<StadiumUseCase>(),
+      matchPlayerStatsUseCase: sl<MatchPlayerStatsUseCase>(),
+    ),
+  );
 }
 
 void blocDependencies() {
@@ -134,11 +156,7 @@ void blocDependencies() {
 
   // Đăng ký các cubit cho màn hình quản lý vòng đấu và trận đấu
   sl.registerFactory<MatchDetailCubit>(
-    () => MatchDetailCubit(
-      matchUseCase: sl<MatchUseCase>(),
-      matchRefereeUseCase: sl<MatchRefereeUseCase>(),
-      playerMatchUseCase: sl<PlayerMatchUseCase>(),
-    ),
+    () => MatchDetailCubit(matchDetailService: sl<MatchDetailService>()),
   );
 
   // Đăng ký các cubit cho màn hình quản lý trọng tài
@@ -193,6 +211,12 @@ void usecaseDependencies() {
   sl.registerFactory<TeamUsecase>(
     () => TeamUsecaseImpl(teamRepository: sl<TeamRepository>()),
   );
+  sl.registerFactory<MatchPlayerStatsUseCase>(
+    () => MatchPlayerStatsUseCaseImpl(
+      matchPlayerStatsRepository: sl<MatchPlayerStatsRepository>(),
+      matchRepository: sl<MatchRepository>(),
+    ),
+  );
 }
 
 void repositoryDependencies() {
@@ -245,10 +269,18 @@ void repositoryDependencies() {
       playerApi: sl<PlayerApi>(),
     ),
   );
+  sl.registerFactory<MatchPlayerStatsRepository>(
+    () => MatchPlayerStatsRepositoryImpl(
+      matchPlayerStatsApi: sl<MatchPlayerStatsApi>(),
+    ),
+  );
 }
 
 void apiDependencies() {
   sl.registerLazySingleton<MatchApi>(() => MatchApiImpl());
+  sl.registerLazySingleton<MatchPlayerStatsApi>(
+    () => MatchPlayerStatsApiImpl(),
+  );
   sl.registerLazySingleton<MatchRefereeApi>(() => MatchRefereeApiImpl());
   sl.registerLazySingleton<PlayerApi>(() => PlayerApiImpl());
   sl.registerLazySingleton<MatchPlayerApi>(() => MatchPlayerApiImpl());

@@ -500,4 +500,113 @@ class MatchApiImpl implements MatchApi {
       return Left(Exception('Lỗi khi lấy chi tiết trận đấu theo vòng đấu: $e'));
     }
   }
+
+  @override
+  Future<Either<Exception, MatchModel>> updateMatchScore({
+    required int matchId,
+    required int homeScore,
+    required int awayScore,
+    int? homeFouls,
+    int? awayFouls,
+    int? attendance,
+  }) async {
+    try {
+      final conn = sl.get<PostgresConnection>().conn;
+
+      if (!conn.isOpen) {
+        await sl.get<PostgresConnection>().connectDb();
+      }
+
+      // Kiểm tra trận đấu tồn tại
+      final checkSql =
+          'SELECT match_id, home_fouls, away_fouls FROM match WHERE match_id = @matchId';
+      final checkParams = {'matchId': matchId};
+      final checkResult = await conn.execute(
+        Sql.named(checkSql),
+        parameters: checkParams,
+      );
+
+      if (checkResult.isEmpty) {
+        return Left(Exception('Không tìm thấy trận đấu với ID: $matchId'));
+      }
+
+      // Lấy số lỗi hiện tại nếu không được cung cấp
+      final currentHomeFouls = checkResult[0][1] as int?;
+      final currentAwayFouls = checkResult[0][2] as int?;
+
+      // Sử dụng giá trị hiện tại nếu không được cung cấp giá trị mới
+      final updatedHomeFouls = homeFouls ?? currentHomeFouls ?? 0;
+      final updatedAwayFouls = awayFouls ?? currentAwayFouls ?? 0;
+
+      // Kiểm tra điểm số hợp lệ (không âm)
+      if (homeScore < 0 || awayScore < 0) {
+        return Left(Exception('Điểm số không được âm'));
+      }
+
+      // Kiểm tra số lỗi hợp lệ (không âm)
+      if (updatedHomeFouls < 0 || updatedAwayFouls < 0) {
+        return Left(Exception('Số lỗi không được âm'));
+      }
+
+      // Kiểm tra không được hòa (điểm số phải khác nhau)
+      if (homeScore == awayScore) {
+        return Left(
+          Exception('Kết quả trận đấu không được hòa, điểm số phải khác nhau'),
+        );
+      }
+
+      // Cập nhật điểm số, số lỗi và số lượng người xem
+      final sql = attendance != null
+          ? '''
+      UPDATE match 
+      SET 
+        home_points = @homeScore, 
+        away_points = @awayScore,
+        home_fouls = @homeFouls,
+        away_fouls = @awayFouls,
+        attendance = @attendance
+      WHERE match_id = @matchId 
+      RETURNING match_id, round_id, match_datetime, home_team_id, away_team_id, 
+               home_color, away_color, attendance, home_points, 
+               away_points, home_fouls, away_fouls;
+      '''
+          : '''
+      UPDATE match 
+      SET 
+        home_points = @homeScore, 
+        away_points = @awayScore,
+        home_fouls = @homeFouls,
+        away_fouls = @awayFouls
+      WHERE match_id = @matchId 
+      RETURNING match_id, round_id, match_datetime, home_team_id, away_team_id, 
+               home_color, away_color, attendance, home_points, 
+               away_points, home_fouls, away_fouls;
+      ''';
+
+      // Kiểm tra số lượng người xem hợp lệ (không âm) nếu được cung cấp
+      if (attendance != null && attendance < 0) {
+        return Left(Exception('Số lượng người xem không được âm'));
+      }
+      
+      final params = {
+        'matchId': matchId,
+        'homeScore': homeScore,
+        'awayScore': awayScore,
+        'homeFouls': updatedHomeFouls,
+        'awayFouls': updatedAwayFouls,
+        'attendance': attendance,
+      };
+
+      final result = await conn.execute(Sql.named(sql), parameters: params);
+
+      if (result.isNotEmpty) {
+        return Right(MatchModel.fromPostgres(result[0]));
+      } else {
+        return Left(Exception('Không thể cập nhật tỉ số và số lỗi trận đấu'));
+      }
+    } catch (e) {
+      print('Lỗi khi cập nhật tỉ số và số lỗi trận đấu: $e');
+      return Left(Exception('Lỗi khi cập nhật tỉ số và số lỗi trận đấu: $e'));
+    }
+  }
 }

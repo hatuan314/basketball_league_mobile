@@ -391,7 +391,7 @@ class ConfigTrigger {
 
     // Xóa function nếu đã tồn tại
     final dropFunction = '''
-      DROP FUNCTION IF EXISTS check_team_stats_consistency();
+      DROP FUNCTION IF EXISTS check_team_stats_consistency() CASCADE;
     ''';
     await _conn.execute(dropFunction);
 
@@ -402,43 +402,60 @@ class ConfigTrigger {
       LANGUAGE plpgsql
       AS E'\n
       DECLARE\n
-        home_team_id INT;\n
-        away_team_id INT;\n
-        home_points_sum INT;\n
-        away_points_sum INT;\n
-        home_fouls_sum INT;\n
-        away_fouls_sum INT;\n
+            match_id_val INT;
+            home_team_id INT;
+            away_team_id INT;
+            home_points_sum INT;
+            away_points_sum INT;
+            home_fouls_sum INT;
+            away_fouls_sum INT;
       BEGIN\n
-        -- Lấy thông tin đội nhà và đội khách\n
-        SELECT m.home_team_id, m.away_team_id INTO home_team_id, away_team_id\n
-        FROM match m\n
-        WHERE m.match_id = NEW.match_id;\n
-\n
-        -- Tính tổng điểm và lỗi của đội nhà\n
-        SELECT COALESCE(SUM(mps.points), 0), COALESCE(SUM(mps.fouls), 0)\n
-        INTO home_points_sum, home_fouls_sum\n
-        FROM match_player mp\n
-          JOIN match_player_stats mps ON mp.match_player_id = mps.match_player_id\n
-          JOIN player_season ps ON mp.player_id = ps.player_season_id\n
-        WHERE mp.match_id = NEW.match_id AND ps.team_id = home_team_id;\n
-\n
-        -- Tính tổng điểm và lỗi của đội khách\n
-        SELECT COALESCE(SUM(mps.points), 0), COALESCE(SUM(mps.fouls), 0)\n
-        INTO away_points_sum, away_fouls_sum\n
-        FROM match_player mp\n
-          JOIN match_player_stats mps ON mp.match_player_id = mps.match_player_id\n
-          JOIN player_season ps ON mp.player_id = ps.player_season_id\n
-        WHERE mp.match_id = NEW.match_id AND ps.team_id = away_team_id;\n
-\n
-        -- Cập nhật điểm và lỗi của trận đấu\n
-        UPDATE match\n
-        SET home_points = home_points_sum,\n
-            away_points = away_points_sum,\n
-            home_fouls = home_fouls_sum,\n
-            away_fouls = away_fouls_sum\n
-        WHERE match_id = NEW.match_id;\n
-\n
-        RETURN NEW;\n
+            -- Lấy match_id từ match_player thông qua match_player_id
+            SELECT mp.match_id INTO match_id_val
+            FROM match_player mp
+            WHERE mp.match_player_id = NEW.match_player_id;
+
+            IF match_id_val IS NULL THEN
+                RAISE EXCEPTION ''BL-E017: Không tìm thấy thông tin trận đấu cho match_player_id %'', NEW.match_player_id;
+            END IF;
+
+            -- Lấy thông tin đội nhà và đội khách
+            SELECT m.home_team_id, m.away_team_id INTO home_team_id, away_team_id
+            FROM match m
+            WHERE m.match_id = match_id_val;
+
+            IF home_team_id IS NULL OR away_team_id IS NULL THEN
+                RAISE EXCEPTION ''BL-E017: Không tìm thấy thông tin đội nhà hoặc đội khách cho trận đấu'';
+            END IF;
+
+            -- Tính tổng điểm và lỗi của đội nhà
+            SELECT COALESCE(SUM(mps.points), 0), COALESCE(SUM(mps.fouls), 0)
+            INTO home_points_sum, home_fouls_sum
+            FROM match_player mp
+                JOIN match_player_stats mps ON mp.match_player_id = mps.match_player_id
+                JOIN player_season ps ON mp.player_id = ps.player_season_id
+            WHERE mp.match_id = match_id_val AND ps.season_team_id = home_team_id;
+
+            -- Tính tổng điểm và lỗi của đội khách
+            SELECT COALESCE(SUM(mps.points), 0), COALESCE(SUM(mps.fouls), 0)
+            INTO away_points_sum, away_fouls_sum
+            FROM match_player mp
+                JOIN match_player_stats mps ON mp.match_player_id = mps.match_player_id
+                JOIN player_season ps ON mp.player_id = ps.player_season_id
+            WHERE mp.match_id = match_id_val AND ps.season_team_id = away_team_id;
+
+            -- Cập nhật điểm và lỗi của trận đấu
+            UPDATE match
+            SET home_points = home_points_sum,
+                away_points = away_points_sum,
+                home_fouls = home_fouls_sum,
+                away_fouls = away_fouls_sum
+            WHERE match_id = match_id_val;
+
+            RAISE NOTICE ''BL-N018: Đã cập nhật thống kê trận đấu: Đội nhà (điểm: %, lỗi: %), Đội khách (điểm: %, lỗi: %)'',
+                home_points_sum, home_fouls_sum, away_points_sum, away_fouls_sum;
+
+            RETURN NEW;
       END;'
     ''';
     await _conn.execute(createFunction);

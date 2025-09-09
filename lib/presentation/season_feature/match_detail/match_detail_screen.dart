@@ -59,6 +59,13 @@ class _MatchDetailScreenState extends State<MatchDetailScreen>
         title: Text('Chi tiết trận đấu', style: AppStyle.headline4),
         actions: [
           IconButton(
+            icon: const Icon(Icons.scoreboard),
+            onPressed: () {
+              context.read<MatchDetailCubit>().simulateMatchScore();
+            },
+            tooltip: 'Cập nhật tỉ số',
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
               context.read<MatchDetailCubit>().refreshMatchDetail();
