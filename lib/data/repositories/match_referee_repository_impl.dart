@@ -3,10 +3,10 @@ import 'dart:math';
 import 'package:baseketball_league_mobile/common/enums.dart';
 import 'package:baseketball_league_mobile/data/datasources/match_referee_api.dart';
 import 'package:baseketball_league_mobile/data/datasources/referee_api.dart';
-import 'package:baseketball_league_mobile/data/models/match_referee_model.dart';
+import 'package:baseketball_league_mobile/data/models/match/match_referee_model.dart';
 import 'package:baseketball_league_mobile/data/models/referee/referee_model.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_referee_detail_entity.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_referee_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_referee_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_referee_entity.dart';
 import 'package:baseketball_league_mobile/domain/repositories/match_referee_repository.dart';
 import 'package:dartz/dartz.dart';
 

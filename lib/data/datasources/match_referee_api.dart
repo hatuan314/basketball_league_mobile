@@ -1,5 +1,5 @@
-import 'package:baseketball_league_mobile/data/models/match_referee_detail_model.dart';
-import 'package:baseketball_league_mobile/data/models/match_referee_model.dart';
+import 'package:baseketball_league_mobile/data/models/match/match_referee_detail_model.dart';
+import 'package:baseketball_league_mobile/data/models/match/match_referee_model.dart';
 import 'package:dartz/dartz.dart';
 
 /// Interface định nghĩa các phương thức API để quản lý trọng tài cho trận đấu

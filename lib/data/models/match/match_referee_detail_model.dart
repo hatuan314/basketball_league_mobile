@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:baseketball_league_mobile/common/enums.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_referee_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_referee_detail_entity.dart';
 import 'package:postgres/postgres.dart';
 
 class MatchRefereeDetailModel {

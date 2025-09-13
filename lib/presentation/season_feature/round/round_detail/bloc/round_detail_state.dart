@@ -1,5 +1,6 @@
-import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.dart';
-import 'package:baseketball_league_mobile/domain/entities/round_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/round/round_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/round/top_scores_by_round_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_detail_entity.dart';
 import 'package:equatable/equatable.dart';
 
 /// Trạng thái của màn hình chi tiết vòng đấu
@@ -37,6 +38,9 @@ class RoundDetailState extends Equatable {
   /// Danh sách trận đấu trong vòng đấu
   final List<MatchDetailEntity> matches;
 
+  /// Cầu thủ có điểm số cao nhất trong vòng đấu
+  final TopScoresByRoundEntity? topScoresByRound;
+
   /// Trạng thái của màn hình
   final RoundDetailStatus status;
 
@@ -48,6 +52,7 @@ class RoundDetailState extends Equatable {
     this.roundId,
     this.round,
     this.matches = const [],
+    this.topScoresByRound,
     this.status = RoundDetailStatus.initial,
     this.errorMessage,
   });
@@ -60,6 +65,7 @@ class RoundDetailState extends Equatable {
     int? roundId,
     RoundEntity? round,
     List<MatchDetailEntity>? matches,
+    TopScoresByRoundEntity? topScoresByRound,
     RoundDetailStatus? status,
     String? errorMessage,
   }) {
@@ -67,6 +73,7 @@ class RoundDetailState extends Equatable {
       roundId: roundId ?? this.roundId,
       round: round ?? this.round,
       matches: matches ?? this.matches,
+      topScoresByRound: topScoresByRound ?? this.topScoresByRound,
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
     );

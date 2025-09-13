@@ -3,8 +3,8 @@ import 'dart:math';
 import 'package:baseketball_league_mobile/common/injection.dart';
 import 'package:baseketball_league_mobile/common/postgresql/connect_database.dart';
 import 'package:baseketball_league_mobile/data/datasources/match_api.dart';
-import 'package:baseketball_league_mobile/data/models/match_detail_model.dart';
-import 'package:baseketball_league_mobile/data/models/match_model.dart';
+import 'package:baseketball_league_mobile/data/models/match/match_detail_model.dart';
+import 'package:baseketball_league_mobile/data/models/match/match_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:postgres/postgres.dart';
 
@@ -556,8 +556,9 @@ class MatchApiImpl implements MatchApi {
       }
 
       // Cập nhật điểm số, số lỗi và số lượng người xem
-      final sql = attendance != null
-          ? '''
+      final sql =
+          attendance != null
+              ? '''
       UPDATE match 
       SET 
         home_points = @homeScore, 
@@ -570,7 +571,7 @@ class MatchApiImpl implements MatchApi {
                home_color, away_color, attendance, home_points, 
                away_points, home_fouls, away_fouls;
       '''
-          : '''
+              : '''
       UPDATE match 
       SET 
         home_points = @homeScore, 
@@ -587,7 +588,7 @@ class MatchApiImpl implements MatchApi {
       if (attendance != null && attendance < 0) {
         return Left(Exception('Số lượng người xem không được âm'));
       }
-      
+
       final params = {
         'matchId': matchId,
         'homeScore': homeScore,

@@ -364,4 +364,266 @@ class SeasonTeamApiImpl implements SeasonTeamApi {
       );
     }
   }
+
+  @override
+  Future<Either<Exception, List<TeamStandingModel>>>
+  getTeamStandingsByAwayWins({int? seasonId, int? teamId}) async {
+    if (seasonId == null) {
+      return Right([]);
+    }
+    try {
+      final postgresConnection = sl<PostgresConnection>();
+      // Kiểm tra kết nối
+      if (!postgresConnection.conn.isOpen) {
+        await postgresConnection.connectDb();
+      }
+
+      // Câu lệnh SQL để lấy bảng xếp hạng đội bóng
+      String query;
+      Map<String, dynamic>? parameters;
+
+      // Nếu có seasonId, chỉ lấy bảng xếp hạng của mùa giải đó
+      query = '''
+        SELECT 
+          season_id,
+          season_name,
+          team_id,
+          team_name,
+          total_points,
+          total_wins,
+          total_losses,
+          total_points_scored,
+          total_points_conceded,
+          point_difference,
+          home_wins,
+          away_wins,
+          total_fouls
+        FROM team_standings
+        WHERE season_id = @seasonId
+        ''';
+
+      parameters = {'seasonId': seasonId};
+
+      if (teamId != null) {
+        query += ' AND team_id = @teamId';
+        parameters['teamId'] = teamId;
+      }
+
+      query += ''' ORDER BY 
+            away_wins DESC,  -- Sắp xếp theo số trận thắng sân khách giảm dần
+            total_points DESC,  -- Nếu số trận thắng sân khách bằng nhau thì xét tổng điểm
+            total_wins DESC;    -- Nếu tổng điểm bằng nhau thì xét tổng số trận thắng
+            ''';
+
+      // Thực thi câu lệnh SQL
+      final result = await postgresConnection.conn.execute(
+        Sql.named(query),
+        parameters: parameters,
+      );
+
+      // Chuyển đổi kết quả thành danh sách model
+      final teamStandings =
+          result.map((row) => TeamStandingModel.fromRow(row)).toList();
+
+      return Right(teamStandings);
+    } catch (e) {
+      return Left(
+        Exception('Lỗi khi lấy bảng xếp hạng đội bóng: ${e.toString()}'),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Exception, List<TeamStandingModel>>>
+  getTeamStandingsByPointDifference({int? seasonId, int? teamId}) async {
+    if (seasonId == null) {
+      return Right([]);
+    }
+    try {
+      final postgresConnection = sl<PostgresConnection>();
+      // Kiểm tra kết nối
+      if (!postgresConnection.conn.isOpen) {
+        await postgresConnection.connectDb();
+      }
+
+      // Câu lệnh SQL để lấy bảng xếp hạng đội bóng
+      String query;
+      Map<String, dynamic>? parameters;
+
+      // Nếu có seasonId, chỉ lấy bảng xếp hạng của mùa giải đó
+      query = '''
+        SELECT 
+          season_id,
+          season_name,
+          team_id,
+          team_name,
+          total_points,
+          total_wins,
+          total_losses,
+          total_points_scored,
+          total_points_conceded,
+          point_difference,
+          home_wins,
+          away_wins,
+          total_fouls
+        FROM team_standings
+        WHERE season_id = @seasonId
+        ''';
+
+      parameters = {'seasonId': seasonId};
+
+      if (teamId != null) {
+        query += ' AND team_id = @teamId';
+        parameters['teamId'] = teamId;
+      }
+
+      query +=
+          ' ORDER BY point_difference DESC, total_points DESC, total_points_scored DESC';
+
+      // Thực thi câu lệnh SQL
+      final result = await postgresConnection.conn.execute(
+        Sql.named(query),
+        parameters: parameters,
+      );
+
+      // Chuyển đổi kết quả thành danh sách model
+      final teamStandings =
+          result.map((row) => TeamStandingModel.fromRow(row)).toList();
+
+      return Right(teamStandings);
+    } catch (e) {
+      return Left(
+        Exception('Lỗi khi lấy bảng xếp hạng đội bóng: ${e.toString()}'),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Exception, List<TeamStandingModel>>>
+  getTeamStandingsByTotalFouls({int? seasonId, int? teamId}) async {
+    if (seasonId == null) {
+      return Right([]);
+    }
+    try {
+      final postgresConnection = sl<PostgresConnection>();
+      // Kiểm tra kết nối
+      if (!postgresConnection.conn.isOpen) {
+        await postgresConnection.connectDb();
+      }
+
+      // Câu lệnh SQL để lấy bảng xếp hạng đội bóng
+      String query;
+      Map<String, dynamic>? parameters;
+
+      // Nếu có seasonId, chỉ lấy bảng xếp hạng của mùa giải đó
+      query = '''
+        SELECT 
+          season_id,
+          season_name,
+          team_id,
+          team_name,
+          total_points,
+          total_wins,
+          total_losses,
+          total_points_scored,
+          total_points_conceded,
+          point_difference,
+          home_wins,
+          away_wins,
+          total_fouls
+        FROM team_standings
+        WHERE season_id = @seasonId
+        ''';
+
+      parameters = {'seasonId': seasonId};
+
+      if (teamId != null) {
+        query += ' AND team_id = @teamId';
+        parameters['teamId'] = teamId;
+      }
+
+      query += ' ORDER BY total_fouls ASC, total_points DESC, total_wins DESC';
+
+      // Thực thi câu lệnh SQL
+      final result = await postgresConnection.conn.execute(
+        Sql.named(query),
+        parameters: parameters,
+      );
+
+      // Chuyển đổi kết quả thành danh sách model
+      final teamStandings =
+          result.map((row) => TeamStandingModel.fromRow(row)).toList();
+
+      return Right(teamStandings);
+    } catch (e) {
+      return Left(
+        Exception('Lỗi khi lấy bảng xếp hạng đội bóng: ${e.toString()}'),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Exception, List<TeamStandingModel>>>
+  getTeamStandingsByTotalPointsScored({int? seasonId, int? teamId}) async {
+    if (seasonId == null) {
+      return Right([]);
+    }
+    try {
+      final postgresConnection = sl<PostgresConnection>();
+      // Kiểm tra kết nối
+      if (!postgresConnection.conn.isOpen) {
+        await postgresConnection.connectDb();
+      }
+
+      // Câu lệnh SQL để lấy bảng xếp hạng đội bóng
+      String query;
+      Map<String, dynamic>? parameters;
+
+      // Nếu có seasonId, chỉ lấy bảng xếp hạng của mùa giải đó
+      query = '''
+        SELECT 
+          season_id,
+          season_name,
+          team_id,
+          team_name,
+          total_points,
+          total_wins,
+          total_losses,
+          total_points_scored,
+          total_points_conceded,
+          point_difference,
+          home_wins,
+          away_wins,
+          total_fouls
+        FROM team_standings
+        WHERE season_id = @seasonId
+        ''';
+
+      parameters = {'seasonId': seasonId};
+
+      if (teamId != null) {
+        query += ' AND team_id = @teamId';
+        parameters['teamId'] = teamId;
+      }
+
+      query +=
+          ' ORDER BY total_points_scored DESC, total_points DESC, point_difference DESC';
+
+      // Thực thi câu lệnh SQL
+      final result = await postgresConnection.conn.execute(
+        Sql.named(query),
+        parameters: parameters,
+      );
+
+      // Chuyển đổi kết quả thành danh sách model
+      final teamStandings =
+          result.map((row) => TeamStandingModel.fromRow(row)).toList();
+
+      return Right(teamStandings);
+    } catch (e) {
+      return Left(
+        Exception('Lỗi khi lấy bảng xếp hạng đội bóng: ${e.toString()}'),
+      );
+    }
+  }
 }

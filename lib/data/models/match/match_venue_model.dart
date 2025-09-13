@@ -1,4 +1,4 @@
-import 'package:baseketball_league_mobile/domain/entities/match_venue_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_venue_entity.dart';
 
 class MatchVenueModel {
   int? matchId;

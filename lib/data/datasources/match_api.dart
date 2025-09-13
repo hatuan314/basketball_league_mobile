@@ -1,5 +1,5 @@
-import 'package:baseketball_league_mobile/data/models/match_detail_model.dart';
-import 'package:baseketball_league_mobile/data/models/match_model.dart';
+import 'package:baseketball_league_mobile/data/models/match/match_detail_model.dart';
+import 'package:baseketball_league_mobile/data/models/match/match_model.dart';
 import 'package:dartz/dartz.dart';
 
 abstract class MatchApi {

@@ -30,10 +30,7 @@ class TeamStandingSearchBar extends StatelessWidget {
             icon: const Icon(Icons.clear),
             onPressed: () {
               searchController.clear();
-              context.read<TeamStandingCubit>().getTeamStandings(
-                seasonId,
-                seasonName,
-              );
+              context.read<TeamStandingCubit>().initial(seasonId, seasonName);
             },
           ),
         ),

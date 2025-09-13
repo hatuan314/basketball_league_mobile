@@ -1,4 +1,4 @@
-import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_detail_entity.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,10 +10,7 @@ class MatchInfoCard extends StatelessWidget {
   final MatchDetailEntity match;
 
   /// Constructor
-  const MatchInfoCard({
-    Key? key,
-    required this.match,
-  }) : super(key: key);
+  const MatchInfoCard({Key? key, required this.match}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,34 +19,21 @@ class MatchInfoCard extends StatelessWidget {
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.sp),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.sp)),
       child: Padding(
         padding: EdgeInsets.all(16.sp),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Thông tin trận đấu',
-              style: AppStyle.headline5,
-            ),
+            Text('Thông tin trận đấu', style: AppStyle.headline5),
             SizedBox(height: 16.sp),
-            _buildInfoRow(
-              'ID trận đấu:',
-              '${match.matchId}',
-              theme,
-            ),
+            _buildInfoRow('ID trận đấu:', '${match.matchId}', theme),
             _buildInfoRow(
               'Thời gian:',
               dateFormat.format(match.matchDate!),
               theme,
             ),
-            _buildInfoRow(
-              'Vòng đấu:',
-              'Vòng ${match.roundNo}',
-              theme,
-            ),
+            _buildInfoRow('Vòng đấu:', 'Vòng ${match.roundNo}', theme),
             _buildInfoRow(
               'Mùa giải:',
               match.seasonName ?? 'Không xác định',
@@ -107,9 +91,7 @@ class MatchInfoCard extends StatelessWidget {
           ),
           Text(
             value,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: textColor,
-            ),
+            style: theme.textTheme.bodyMedium?.copyWith(color: textColor),
           ),
         ],
       ),

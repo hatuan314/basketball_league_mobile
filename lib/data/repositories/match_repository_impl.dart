@@ -1,7 +1,7 @@
 import 'package:baseketball_league_mobile/data/datasources/match_api.dart';
-import 'package:baseketball_league_mobile/data/models/match_model.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_entity.dart';
+import 'package:baseketball_league_mobile/data/models/match/match_model.dart';
+import 'package:baseketball_league_mobile/domain/match/match_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_entity.dart';
 import 'package:baseketball_league_mobile/domain/repositories/match_repository.dart';
 import 'package:dartz/dartz.dart';
 
@@ -117,7 +117,7 @@ class MatchRepositoryImpl implements MatchRepository {
       return Left(Exception('Lỗi khi lấy chi tiết trận đấu theo vòng đấu: $e'));
     }
   }
-  
+
   @override
   Future<Either<Exception, MatchEntity>> updateMatchScore({
     required int matchId,
@@ -132,17 +132,20 @@ class MatchRepositoryImpl implements MatchRepository {
       if (homeScore < 0 || awayScore < 0) {
         return Left(Exception('Điểm số không được âm'));
       }
-      
+
       // Kiểm tra số lỗi hợp lệ (không âm) nếu được cung cấp
-      if ((homeFouls != null && homeFouls < 0) || (awayFouls != null && awayFouls < 0)) {
+      if ((homeFouls != null && homeFouls < 0) ||
+          (awayFouls != null && awayFouls < 0)) {
         return Left(Exception('Số lỗi không được âm'));
       }
-      
+
       // Kiểm tra không được hòa (điểm số phải khác nhau)
       if (homeScore == awayScore) {
-        return Left(Exception('Kết quả trận đấu không được hòa, điểm số phải khác nhau'));
+        return Left(
+          Exception('Kết quả trận đấu không được hòa, điểm số phải khác nhau'),
+        );
       }
-      
+
       final result = await _matchApi.updateMatchScore(
         matchId: matchId,
         homeScore: homeScore,

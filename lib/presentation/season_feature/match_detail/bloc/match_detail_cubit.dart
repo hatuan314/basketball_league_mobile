@@ -1,9 +1,9 @@
 import 'package:baseketball_league_mobile/common/app_utils.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_entity.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_player_detail_entity.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_player_stats_entity.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_referee_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_player_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_player_stats_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_referee_detail_entity.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/bloc/match_detail_state.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/service/match_detail_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -285,9 +285,14 @@ class MatchDetailCubit extends Cubit<MatchDetailState> {
             return;
           }
           // Tải lại danh sách trọng tài
-          await _loadMatchReferees(matchId);
+          final referees = await _loadMatchReferees(matchId);
 
-          emit(state.copyWith(status: MatchDetailStatus.updateSuccess));
+          emit(
+            state.copyWith(
+              status: MatchDetailStatus.updateSuccess,
+              referees: referees,
+            ),
+          );
 
           // Sau 2 giây, đặt lại trạng thái về success
           Future.delayed(const Duration(seconds: 2), () {

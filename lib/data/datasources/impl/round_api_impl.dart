@@ -1,6 +1,7 @@
 import 'package:baseketball_league_mobile/common/injection.dart';
 import 'package:baseketball_league_mobile/common/postgresql/connect_database.dart';
 import 'package:baseketball_league_mobile/data/datasources/round_api.dart';
+import 'package:baseketball_league_mobile/data/models/round/top_scores_by_round_model.dart';
 import 'package:baseketball_league_mobile/data/models/round_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:postgres/postgres.dart';
@@ -280,6 +281,55 @@ class RoundApiImpl implements RoundApi {
       }
     } catch (e) {
       return Left(Exception('Lỗi khi cập nhật vòng đấu: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, TopScoresByRoundModel>> getTopScoresByRound({
+    int? seasonId,
+    int? roundId,
+  }) async {
+    try {
+      final postgresConnection = sl<PostgresConnection>();
+      // Kiểm tra kết nối
+      if (!postgresConnection.conn.isOpen) {
+        await postgresConnection.connectDb();
+      }
+
+      // Câu lệnh SQL để lấy thông tin vòng đấu
+      final query = '''
+      SELECT 
+        season_id,
+        season_name,
+        round_id,
+        round_no,
+        player_id,
+        player_code,
+        player_name,
+        team_id,
+        team_name,
+        total_points
+      FROM top_scorers_by_round WHERE season_id = @seasonId and round_id = @roundId ORDER BY total_points DESC LIMIT 1
+      ''';
+
+      // Thực thi câu lệnh SQL với các tham số
+      final result = await postgresConnection.conn.execute(
+        Sql.named(query),
+        parameters: {'seasonId': seasonId, 'roundId': roundId},
+      );
+
+      // Kiểm tra kết quả trả về
+      if (result.isNotEmpty) {
+        // Chuyển đổi kết quả thành model
+        final topScoresByRound = TopScoresByRoundModel.fromPostgres(
+          result.first,
+        );
+        return Right(topScoresByRound);
+      } else {
+        return Left(Exception('Không tìm thấy vòng đấu với ID: $id'));
+      }
+    } catch (e) {
+      return Left(Exception('Lỗi khi lấy thông tin vòng đấu: ${e.toString()}'));
     }
   }
 }

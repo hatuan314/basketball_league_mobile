@@ -9,26 +9,30 @@ class TeamStandingCubit extends Cubit<TeamStandingState> {
 
   TeamStandingCubit(this._seasonTeamUseCase) : super(const TeamStandingState());
 
+  Future<void> initial(int seasonId, String seasonName) async {
+    emit(
+      state.copyWith(
+        isLoading: true,
+        seasonId: seasonId,
+        seasonName: seasonName,
+      ),
+    );
+    final teamStandings = await getTeamStandings();
+    emit(state.copyWith(isLoading: false, teamStandings: teamStandings));
+  }
+
   /// Lấy bảng xếp hạng của một mùa giải
-  Future<void> getTeamStandings(int seasonId, String seasonName) async {
+  Future<List<TeamStandingEntity>> getTeamStandings() async {
     try {
       // Cập nhật state để hiển thị loading
-      emit(
-        state.copyWith(
-          isLoading: true,
-          seasonId: seasonId,
-          seasonName: seasonName,
-          clearError: true,
-        ),
-      );
 
       // Gọi use case để lấy dữ liệu
       final result = await _seasonTeamUseCase.getTeamStandings(
-        seasonId: seasonId,
+        seasonId: state.seasonId,
       );
 
       // Xử lý kết quả
-      result.fold(
+      return result.fold(
         (exception) {
           emit(
             state.copyWith(
@@ -36,15 +40,10 @@ class TeamStandingCubit extends Cubit<TeamStandingState> {
               errorMessage: exception.toString(),
             ),
           );
+          return [];
         },
         (teamStandings) {
-          emit(
-            state.copyWith(
-              isLoading: false,
-              teamStandings: teamStandings,
-              clearError: true,
-            ),
-          );
+          return teamStandings;
         },
       );
     } catch (e) {
@@ -54,6 +53,7 @@ class TeamStandingCubit extends Cubit<TeamStandingState> {
           errorMessage: 'Đã xảy ra lỗi: ${e.toString()}',
         ),
       );
+      return [];
     }
   }
 
@@ -63,13 +63,13 @@ class TeamStandingCubit extends Cubit<TeamStandingState> {
       if (name.isEmpty) {
         // Nếu tên rỗng, lấy lại bảng xếp hạng của mùa giải hiện tại
         if (state.seasonId != null) {
-          await getTeamStandings(state.seasonId!, state.seasonName ?? '');
+          await getTeamStandings();
         }
         return;
       }
 
       // Cập nhật state để hiển thị loading
-      emit(state.copyWith(isLoading: true, clearError: true));
+      emit(state.copyWith(isLoading: true));
 
       // Gọi use case để tìm kiếm
       final result = await _seasonTeamUseCase.searchTeamStandingByName(name);
@@ -85,13 +85,7 @@ class TeamStandingCubit extends Cubit<TeamStandingState> {
           );
         },
         (teamStandings) {
-          emit(
-            state.copyWith(
-              isLoading: false,
-              teamStandings: teamStandings,
-              clearError: true,
-            ),
-          );
+          emit(state.copyWith(isLoading: false, teamStandings: teamStandings));
         },
       );
     } catch (e) {
@@ -105,46 +99,100 @@ class TeamStandingCubit extends Cubit<TeamStandingState> {
   }
 
   /// Sắp xếp bảng xếp hạng theo tiêu chí
-  void sortTeamStandings(SortCriteria criteria) {
-    final List<TeamStandingEntity> sortedList = List.from(state.teamStandings);
+  Future<void> sortTeamStandings(SortCriteria criteria) async {
+    emit(state.copyWith(isLoading: true));
+    List<TeamStandingEntity> sortedList = [];
 
     switch (criteria) {
       case SortCriteria.points:
-        sortedList.sort(
-          (a, b) => (b.totalPoints ?? 0).compareTo(a.totalPoints ?? 0),
-        );
+        sortedList = await getTeamStandings();
         break;
-      case SortCriteria.wins:
-        sortedList.sort(
-          (a, b) => (b.totalWins ?? 0).compareTo(a.totalWins ?? 0),
-        );
-        break;
-      case SortCriteria.losses:
-        sortedList.sort(
-          (a, b) => (b.totalLosses ?? 0).compareTo(a.totalLosses ?? 0),
-        );
-        break;
-      case SortCriteria.pointsScored:
-        sortedList.sort(
-          (a, b) =>
-              (b.totalPointsScored ?? 0).compareTo(a.totalPointsScored ?? 0),
-        );
-        break;
-      case SortCriteria.pointsConceded:
-        sortedList.sort(
-          (a, b) => (b.totalPointsConceded ?? 0).compareTo(
-            a.totalPointsConceded ?? 0,
-          ),
-        );
+      case SortCriteria.awayWins:
+        sortedList = await getTeamStandingsByAwayWins();
         break;
       case SortCriteria.pointDifference:
-        sortedList.sort(
-          (a, b) => (b.pointDifference ?? 0).compareTo(a.pointDifference ?? 0),
-        );
+        sortedList = await getTeamStandingsByPointDifference();
+        break;
+      case SortCriteria.totalPointsScored:
+        sortedList = await getTeamStandingsByTotalPointsScored();
+        break;
+      case SortCriteria.totalFouls:
+        sortedList = await getTeamStandingsByTotalFouls();
         break;
     }
 
-    emit(state.copyWith(teamStandings: sortedList));
+    emit(state.copyWith(teamStandings: sortedList, isLoading: false));
+  }
+
+  Future<List<TeamStandingEntity>> getTeamStandingsByPointDifference() async {
+    final results = await _seasonTeamUseCase.getTeamStandingsByPointDifference(
+      seasonId: state.seasonId,
+    );
+
+    return results.fold(
+      (exception) {
+        emit(
+          state.copyWith(isLoading: false, errorMessage: exception.toString()),
+        );
+        return [];
+      },
+      (teamStandings) {
+        return teamStandings;
+      },
+    );
+  }
+
+  Future<List<TeamStandingEntity>> getTeamStandingsByTotalPointsScored() async {
+    final results = await _seasonTeamUseCase
+        .getTeamStandingsByTotalPointsScored(seasonId: state.seasonId);
+
+    return results.fold(
+      (exception) {
+        emit(
+          state.copyWith(isLoading: false, errorMessage: exception.toString()),
+        );
+        return [];
+      },
+      (teamStandings) {
+        return teamStandings;
+      },
+    );
+  }
+
+  Future<List<TeamStandingEntity>> getTeamStandingsByAwayWins() async {
+    final results = await _seasonTeamUseCase.getTeamStandingsByAwayWins(
+      seasonId: state.seasonId,
+    );
+
+    return results.fold(
+      (exception) {
+        emit(
+          state.copyWith(isLoading: false, errorMessage: exception.toString()),
+        );
+        return [];
+      },
+      (teamStandings) {
+        return teamStandings;
+      },
+    );
+  }
+
+  Future<List<TeamStandingEntity>> getTeamStandingsByTotalFouls() async {
+    final results = await _seasonTeamUseCase.getTeamStandingsByTotalFouls(
+      seasonId: state.seasonId,
+    );
+
+    return results.fold(
+      (exception) {
+        emit(
+          state.copyWith(isLoading: false, errorMessage: exception.toString()),
+        );
+        return [];
+      },
+      (teamStandings) {
+        return teamStandings;
+      },
+    );
   }
 
   /// Tạo hàng loạt mối quan hệ giữa mùa giải và đội bóng
@@ -158,7 +206,7 @@ class TeamStandingCubit extends Cubit<TeamStandingState> {
       }
 
       // Cập nhật state để hiển thị loading
-      emit(state.copyWith(isLoading: true, clearError: true));
+      emit(state.copyWith(isLoading: true));
 
       // Gọi use case để tạo hàng loạt mối quan hệ
       final result = await _seasonTeamUseCase.createBulkSeasonTeams(
@@ -178,7 +226,7 @@ class TeamStandingCubit extends Cubit<TeamStandingState> {
         },
         (seasonTeams) {
           // Sau khi tạo thành công, lấy lại bảng xếp hạng
-          getTeamStandings(state.seasonId!, state.seasonName ?? '');
+          getTeamStandings();
         },
       );
     } catch (e) {
@@ -198,18 +246,15 @@ enum SortCriteria {
   /// Sắp xếp theo điểm
   points,
 
-  /// Sắp xếp theo số trận thắng
-  wins,
-
-  /// Sắp xếp theo số trận thua
-  losses,
-
-  /// Sắp xếp theo tổng điểm ghi được
-  pointsScored,
-
-  /// Sắp xếp theo tổng điểm bị ghi
-  pointsConceded,
+  /// Sắp xếp theo số trận thắng (trận khách)
+  awayWins,
 
   /// Sắp xếp theo hiệu số
   pointDifference,
+
+  /// Sắp xếp theo tổng điểm ghi được
+  totalPointsScored,
+
+  /// Sắp xếp theo tổng số lỗi ít nhất
+  totalFouls,
 }

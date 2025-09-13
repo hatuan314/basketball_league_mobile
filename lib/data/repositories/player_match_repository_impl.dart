@@ -2,9 +2,9 @@ import 'dart:math' as math;
 
 import 'package:baseketball_league_mobile/data/datasources/match_player_api.dart';
 import 'package:baseketball_league_mobile/data/datasources/player_season_api.dart';
-import 'package:baseketball_league_mobile/data/models/match_player_model.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_player_detail_entity.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_player_entity.dart';
+import 'package:baseketball_league_mobile/data/models/match/match_player_model.dart';
+import 'package:baseketball_league_mobile/domain/match/match_player_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_player_entity.dart';
 import 'package:baseketball_league_mobile/domain/repositories/player_match_repository.dart';
 import 'package:dartz/dartz.dart';
 
@@ -136,7 +136,7 @@ class PlayerMatchRepositoryImpl implements PlayerMatchRepository {
         seasonTeamId: seasonTeamId,
       );
 
-      // Kiểm tra kết quả lấy danh sách cầu thủ
+      // Số lượng cầu thủ của đội trong mùa giải
       final List<String> seasonPlayerIds = [];
 
       // Xử lý kết quả lấy danh sách cầu thủ đội nhà
@@ -144,7 +144,7 @@ class PlayerMatchRepositoryImpl implements PlayerMatchRepository {
         return Left(Exception('Không thể lấy danh sách cầu thủ của đội nhà'));
       }
 
-      // Lấy danh sách ID cầu thủ của đội nhà
+      // Lấy danh sách ID cầu thủ của đội
       playersResult.fold((exception) => null, (seasonPlayers) {
         for (final player in seasonPlayers) {
           if (player.id != null) {
@@ -153,15 +153,14 @@ class PlayerMatchRepositoryImpl implements PlayerMatchRepository {
         }
       });
 
-      // Kiểm tra số lượng cầu thủ của đội nhà
+      // Kiểm tra số lượng cầu thủ của đội trong mùa giải
       if (seasonPlayerIds.isEmpty) {
-        return Left(Exception('Đội nhà không có cầu thủ nào trong mùa giải'));
+        return Left(Exception('Đội không có cầu thủ nào trong mùa giải'));
       }
 
       // Lấy danh sách cầu thủ đã đăng ký trong trận đấu
-      final registeredPlayersResult = await _playerMatchApi.getMatchPlayers(
-        matchId: matchId,
-      );
+      final registeredPlayersResult = await _playerMatchApi
+          .getTeamPlayersInMatch(matchId, seasonTeamId);
 
       // Kiểm tra kết quả lấy danh sách cầu thủ đã đăng ký
       if (registeredPlayersResult.isLeft()) {
@@ -191,8 +190,7 @@ class PlayerMatchRepositoryImpl implements PlayerMatchRepository {
       unregisteredPlayerIds.shuffle(math.Random());
 
       // Tính toán số lượng cầu thủ cần đăng ký thêm
-      final int playersToAdd =
-          seasonPlayerIds.length - registeredPlayerIds.length;
+      final int playersToAdd = maxPlayersPerTeam - registeredPlayerIds.length;
 
       // Lấy danh sách cầu thủ cần đăng ký thêm
       final List<String> playersToRegister =

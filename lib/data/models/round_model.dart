@@ -1,4 +1,4 @@
-import 'package:baseketball_league_mobile/domain/entities/round_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/round/round_entity.dart';
 
 class RoundModel {
   int? id;

@@ -1,6 +1,6 @@
 import 'package:baseketball_league_mobile/common/constants/router_name.dart';
 import 'package:baseketball_league_mobile/common/extentions/route_extension.dart';
-import 'package:baseketball_league_mobile/domain/entities/round_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/round/round_entity.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/round/round_list/bloc/round_list_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/round/round_list/bloc/round_list_state.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/round/round_list/widgets/round_item_card.dart';

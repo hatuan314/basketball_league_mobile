@@ -1,4 +1,4 @@
-import 'package:baseketball_league_mobile/domain/entities/round_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/round/round_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';

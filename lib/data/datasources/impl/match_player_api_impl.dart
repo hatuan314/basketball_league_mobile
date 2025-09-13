@@ -1,8 +1,8 @@
 import 'package:baseketball_league_mobile/common/injection.dart';
 import 'package:baseketball_league_mobile/common/postgresql/connect_database.dart';
 import 'package:baseketball_league_mobile/data/datasources/match_player_api.dart';
-import 'package:baseketball_league_mobile/data/models/match_player_detail_model.dart';
-import 'package:baseketball_league_mobile/data/models/match_player_model.dart';
+import 'package:baseketball_league_mobile/data/models/match/match_player_detail_model.dart';
+import 'package:baseketball_league_mobile/data/models/match/match_player_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:postgres/postgres.dart';
 
@@ -248,7 +248,7 @@ class MatchPlayerApiImpl implements MatchPlayerApi {
   @override
   Future<Either<Exception, List<MatchPlayerModel>>> getTeamPlayersInMatch(
     int matchId,
-    int teamId,
+    int seasonTeamId,
   ) async {
     try {
       final conn = sl.get<PostgresConnection>().conn;
@@ -266,7 +266,7 @@ class MatchPlayerApiImpl implements MatchPlayerApi {
       WHERE mp.match_id = @matchId AND ps.season_team_id = @teamId
       ''';
 
-      final params = {'matchId': matchId, 'teamId': teamId};
+      final params = {'matchId': matchId, 'teamId': seasonTeamId};
 
       // Thực hiện truy vấn SQL
       final result = await conn.execute(Sql.named(sql), parameters: params);

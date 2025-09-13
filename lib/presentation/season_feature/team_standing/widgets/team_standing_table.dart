@@ -68,7 +68,7 @@ class TeamStandingTable extends StatelessWidget {
                         label: 'Thử lại',
                         textColor: Colors.white,
                         onPressed: () {
-                          context.read<TeamStandingCubit>().getTeamStandings(
+                          context.read<TeamStandingCubit>().initial(
                             seasonId,
                             seasonName,
                           );

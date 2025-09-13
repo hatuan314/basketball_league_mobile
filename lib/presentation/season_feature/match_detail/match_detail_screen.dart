@@ -1,5 +1,5 @@
-import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_referee_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_referee_detail_entity.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/bloc/match_detail_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/bloc/match_detail_state.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/match_detail/tabs/away_players_tab.dart';

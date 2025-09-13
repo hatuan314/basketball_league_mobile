@@ -1,8 +1,8 @@
 import 'package:baseketball_league_mobile/common/injection.dart';
 import 'package:baseketball_league_mobile/common/postgresql/connect_database.dart';
 import 'package:baseketball_league_mobile/data/datasources/match_referee_api.dart';
-import 'package:baseketball_league_mobile/data/models/match_referee_detail_model.dart';
-import 'package:baseketball_league_mobile/data/models/match_referee_model.dart';
+import 'package:baseketball_league_mobile/data/models/match/match_referee_detail_model.dart';
+import 'package:baseketball_league_mobile/data/models/match/match_referee_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:postgres/postgres.dart';
 

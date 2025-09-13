@@ -1,6 +1,6 @@
 import 'package:baseketball_league_mobile/common/constants/router_name.dart';
 import 'package:baseketball_league_mobile/common/extentions/route_extension.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_detail_entity.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_color.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/image/app_image_widget.dart';
 import 'package:flutter/material.dart';

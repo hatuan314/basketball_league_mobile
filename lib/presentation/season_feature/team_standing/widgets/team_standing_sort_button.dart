@@ -19,16 +19,20 @@ class TeamStandingSortButton extends StatelessWidget {
               child: Text('Sắp xếp theo điểm'),
             ),
             const PopupMenuItem<SortCriteria>(
-              value: SortCriteria.wins,
-              child: Text('Sắp xếp theo số trận thắng'),
+              value: SortCriteria.awayWins,
+              child: Text('Sắp xếp theo số trận thắng (trận khách)'),
             ),
             const PopupMenuItem<SortCriteria>(
               value: SortCriteria.pointDifference,
               child: Text('Sắp xếp theo hiệu số'),
             ),
             const PopupMenuItem<SortCriteria>(
-              value: SortCriteria.pointsScored,
+              value: SortCriteria.totalPointsScored,
               child: Text('Sắp xếp theo điểm ghi được'),
+            ),
+            const PopupMenuItem<SortCriteria>(
+              value: SortCriteria.totalFouls,
+              child: Text('Sắp xếp theo tổng số lỗi ít nhất'),
             ),
           ],
     );

@@ -1,4 +1,4 @@
-import 'package:baseketball_league_mobile/domain/entities/match_player_stats_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_player_stats_entity.dart';
 import 'package:baseketball_league_mobile/domain/repositories/match_player_stats_repository.dart';
 import 'package:baseketball_league_mobile/domain/repositories/match_repository.dart';
 import 'package:baseketball_league_mobile/domain/usecases/match_player_stats_usecase.dart';

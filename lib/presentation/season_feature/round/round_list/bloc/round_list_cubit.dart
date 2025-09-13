@@ -1,4 +1,4 @@
-import 'package:baseketball_league_mobile/domain/entities/round_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/round/round_entity.dart';
 import 'package:baseketball_league_mobile/domain/usecases/round_usecase.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/round/round_list/bloc/round_list_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

@@ -167,4 +167,40 @@ class SeasonTeamUseCaseImpl implements SeasonTeamUseCase {
       teamId: teamId,
     );
   }
+
+  @override
+  Future<Either<Exception, List<TeamStandingEntity>>>
+  getTeamStandingsByAwayWins({int? seasonId, int? teamId}) {
+    return _repository.getTeamStandingsByAwayWins(
+      seasonId: seasonId,
+      teamId: teamId,
+    );
+  }
+
+  @override
+  Future<Either<Exception, List<TeamStandingEntity>>>
+  getTeamStandingsByPointDifference({int? seasonId, int? teamId}) {
+    return _repository.getTeamStandingsByPointDifference(
+      seasonId: seasonId,
+      teamId: teamId,
+    );
+  }
+
+  @override
+  Future<Either<Exception, List<TeamStandingEntity>>>
+  getTeamStandingsByTotalFouls({int? seasonId, int? teamId}) {
+    return _repository.getTeamStandingsByTotalFouls(
+      seasonId: seasonId,
+      teamId: teamId,
+    );
+  }
+
+  @override
+  Future<Either<Exception, List<TeamStandingEntity>>>
+  getTeamStandingsByTotalPointsScored({int? seasonId, int? teamId}) {
+    return _repository.getTeamStandingsByTotalPointsScored(
+      seasonId: seasonId,
+      teamId: teamId,
+    );
+  }
 }

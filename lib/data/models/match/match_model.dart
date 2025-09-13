@@ -1,4 +1,4 @@
-import 'package:baseketball_league_mobile/domain/entities/match_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_entity.dart';
 
 class MatchModel {
   int? id;

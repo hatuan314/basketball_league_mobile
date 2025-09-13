@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_entity.dart';
 import 'package:baseketball_league_mobile/domain/repositories/match_repository.dart';
 import 'package:baseketball_league_mobile/domain/usecases/match_usecase.dart';
 import 'package:dartz/dartz.dart';

@@ -1,5 +1,5 @@
-import 'package:baseketball_league_mobile/data/models/match_player_detail_model.dart';
-import 'package:baseketball_league_mobile/data/models/match_player_model.dart';
+import 'package:baseketball_league_mobile/data/models/match/match_player_detail_model.dart';
+import 'package:baseketball_league_mobile/data/models/match/match_player_model.dart';
 import 'package:dartz/dartz.dart';
 
 /// Interface định nghĩa các phương thức API để quản lý thông tin cầu thủ trong trận đấu
@@ -57,7 +57,7 @@ abstract class MatchPlayerApi {
   /// Trả về danh sách thông tin cầu thủ trong trận đấu nếu thành công hoặc Exception nếu thất bại
   Future<Either<Exception, List<MatchPlayerModel>>> getTeamPlayersInMatch(
     int matchId,
-    int teamId,
+    int seasonTeamId,
   );
 
   /// Lấy danh sách thông tin chi tiết cầu thủ của một đội trong một trận đấu

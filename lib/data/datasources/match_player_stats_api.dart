@@ -1,4 +1,4 @@
-import 'package:baseketball_league_mobile/data/models/match_player_stats_model.dart';
+import 'package:baseketball_league_mobile/data/models/match/match_player_stats_model.dart';
 import 'package:dartz/dartz.dart';
 
 /// API để quản lý thống kê cầu thủ trong trận đấu

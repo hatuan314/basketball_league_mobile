@@ -1,4 +1,4 @@
-import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_detail_entity.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,7 +10,14 @@ class MatchScoreCard extends StatefulWidget {
   final MatchDetailEntity match;
 
   /// Callback khi cập nhật điểm số
-  final Function(int homePoints, int awayPoints, int homeFouls, int awayFouls, int attendance) onUpdateScore;
+  final Function(
+    int homePoints,
+    int awayPoints,
+    int homeFouls,
+    int awayFouls,
+    int attendance,
+  )
+  onUpdateScore;
 
   /// Constructor
   const MatchScoreCard({
@@ -38,11 +45,21 @@ class _MatchScoreCardState extends State<MatchScoreCard> {
   }
 
   void _initControllers() {
-    _homePointsController = TextEditingController(text: '${widget.match.homePoints ?? 0}');
-    _awayPointsController = TextEditingController(text: '${widget.match.awayPoints ?? 0}');
-    _homeFoulsController = TextEditingController(text: '${widget.match.homeFouls ?? 0}');
-    _awayFoulsController = TextEditingController(text: '${widget.match.awayFouls ?? 0}');
-    _attendanceController = TextEditingController(text: '${widget.match.attendance ?? 0}');
+    _homePointsController = TextEditingController(
+      text: '${widget.match.homePoints ?? 0}',
+    );
+    _awayPointsController = TextEditingController(
+      text: '${widget.match.awayPoints ?? 0}',
+    );
+    _homeFoulsController = TextEditingController(
+      text: '${widget.match.homeFouls ?? 0}',
+    );
+    _awayFoulsController = TextEditingController(
+      text: '${widget.match.awayFouls ?? 0}',
+    );
+    _attendanceController = TextEditingController(
+      text: '${widget.match.attendance ?? 0}',
+    );
   }
 
   @override
@@ -69,9 +86,7 @@ class _MatchScoreCardState extends State<MatchScoreCard> {
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.sp),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.sp)),
       child: Padding(
         padding: EdgeInsets.all(16.sp),
         child: Column(
@@ -80,10 +95,7 @@ class _MatchScoreCardState extends State<MatchScoreCard> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Tỷ số trận đấu',
-                  style: AppStyle.headline5,
-                ),
+                Text('Tỷ số trận đấu', style: AppStyle.headline5),
                 IconButton(
                   icon: Icon(_isEditing ? Icons.save : Icons.edit),
                   onPressed: () {
@@ -134,10 +146,7 @@ class _MatchScoreCardState extends State<MatchScoreCard> {
               ),
             ),
             SizedBox(width: 16.sp),
-            Text(
-              '-',
-              style: theme.textTheme.headlineMedium,
-            ),
+            Text('-', style: theme.textTheme.headlineMedium),
             SizedBox(width: 16.sp),
             Expanded(
               child: _buildTeamScoreColumn(
@@ -161,10 +170,7 @@ class _MatchScoreCardState extends State<MatchScoreCard> {
   ) {
     return Column(
       children: [
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium,
-        ),
+        Text(label, style: theme.textTheme.bodyMedium),
         SizedBox(height: 4.sp),
         Text(
           teamName,
@@ -178,29 +184,27 @@ class _MatchScoreCardState extends State<MatchScoreCard> {
         SizedBox(height: 8.sp),
         _isEditing
             ? TextField(
-                controller: controller,
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.sp),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 8.sp,
-                    vertical: 8.sp,
-                  ),
+              controller: controller,
+              keyboardType: TextInputType.number,
+              textAlign: TextAlign.center,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.sp),
                 ),
-              )
-            : Text(
-                controller.text,
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 8.sp,
+                  vertical: 8.sp,
                 ),
-                textAlign: TextAlign.center,
               ),
+            )
+            : Text(
+              controller.text,
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
       ],
     );
   }
@@ -226,10 +230,7 @@ class _MatchScoreCardState extends State<MatchScoreCard> {
               ),
             ),
             SizedBox(width: 16.sp),
-            Text(
-              '-',
-              style: theme.textTheme.headlineMedium,
-            ),
+            Text('-', style: theme.textTheme.headlineMedium),
             SizedBox(width: 16.sp),
             Expanded(
               child: _buildTeamFoulsColumn(
@@ -251,36 +252,31 @@ class _MatchScoreCardState extends State<MatchScoreCard> {
   ) {
     return Column(
       children: [
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium,
-        ),
+        Text(label, style: theme.textTheme.bodyMedium),
         SizedBox(height: 8.sp),
         _isEditing
             ? TextField(
-                controller: controller,
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.sp),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 8.sp,
-                    vertical: 8.sp,
-                  ),
+              controller: controller,
+              keyboardType: TextInputType.number,
+              textAlign: TextAlign.center,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.sp),
                 ),
-              )
-            : Text(
-                controller.text,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 8.sp,
+                  vertical: 8.sp,
                 ),
-                textAlign: TextAlign.center,
               ),
+            )
+            : Text(
+              controller.text,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
       ],
     );
   }
@@ -298,25 +294,23 @@ class _MatchScoreCardState extends State<MatchScoreCard> {
         SizedBox(height: 8.sp),
         _isEditing
             ? TextField(
-                controller: _attendanceController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.sp),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16.sp,
-                    vertical: 12.sp,
-                  ),
+              controller: _attendanceController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.sp),
                 ),
-              )
-            : Text(
-                '${_attendanceController.text} người',
-                style: theme.textTheme.titleMedium,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.sp,
+                  vertical: 12.sp,
+                ),
               ),
+            )
+            : Text(
+              '${_attendanceController.text} người',
+              style: theme.textTheme.titleMedium,
+            ),
       ],
     );
   }

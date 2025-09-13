@@ -2,6 +2,7 @@ import 'package:baseketball_league_mobile/presentation/season_feature/round/roun
 import 'package:baseketball_league_mobile/presentation/season_feature/round/round_detail/bloc/round_detail_state.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/round/round_detail/widgets/match_listview.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/round/round_detail/widgets/round_info_widget.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/round/round_detail/widgets/top_score_by_round_card.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_color.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_style.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/app_loading.dart';
@@ -65,6 +66,15 @@ class _RoundDetailScreenState extends State<RoundDetailScreen> {
                   : 'Chi tiết vòng đấu',
               style: AppStyle.headline4,
             ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: () {
+                  context.read<RoundDetailCubit>().initial(widget.roundId);
+                },
+                tooltip: 'Làm mới',
+              ),
+            ],
           ),
           body: _buildBody(context, state),
           floatingActionButton:
@@ -101,20 +111,20 @@ class _RoundDetailScreenState extends State<RoundDetailScreen> {
       return const EmptyWidget(message: 'Không tìm thấy thông tin vòng đấu');
     }
 
-    return RefreshIndicator(
-      onRefresh: () => context.read<RoundDetailCubit>().refresh(),
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Thông tin vòng đấu
-            RoundInfoWidget(round: state.round!),
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Thông tin vòng đấu
+          RoundInfoWidget(round: state.round!),
 
-            // Danh sách trận đấu
-            MatchListview(matches: state.matches),
-          ],
-        ),
+          // Thông tin cầu thủ ghi điểm cao nhất
+          TopScoreByRoundCard(topScoresByRound: state.topScoresByRound),
+
+          // Danh sách trận đấu
+          MatchListview(matches: state.matches),
+        ],
       ),
     );
   }

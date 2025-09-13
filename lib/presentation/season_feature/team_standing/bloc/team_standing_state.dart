@@ -5,16 +5,16 @@ import 'package:equatable/equatable.dart';
 class TeamStandingState extends Equatable {
   /// Danh sách đội bóng trong bảng xếp hạng
   final List<TeamStandingEntity> teamStandings;
-  
+
   /// Trạng thái loading
   final bool isLoading;
-  
+
   /// Thông báo lỗi nếu có
   final String? errorMessage;
-  
+
   /// ID của mùa giải đang hiển thị
   final int? seasonId;
-  
+
   /// Tên của mùa giải đang hiển thị
   final String? seasonName;
 
@@ -33,12 +33,11 @@ class TeamStandingState extends Equatable {
     String? errorMessage,
     int? seasonId,
     String? seasonName,
-    bool clearError = false,
   }) {
     return TeamStandingState(
       teamStandings: teamStandings ?? this.teamStandings,
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+      errorMessage: errorMessage,
       seasonId: seasonId ?? this.seasonId,
       seasonName: seasonName ?? this.seasonName,
     );
@@ -46,10 +45,10 @@ class TeamStandingState extends Equatable {
 
   @override
   List<Object?> get props => [
-        teamStandings,
-        isLoading,
-        errorMessage,
-        seasonId,
-        seasonName,
-      ];
+    teamStandings,
+    isLoading,
+    errorMessage,
+    seasonId,
+    seasonName,
+  ];
 }

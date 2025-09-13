@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:baseketball_league_mobile/common/constants/router_name.dart';
 import 'package:baseketball_league_mobile/common/extentions/route_extension.dart';
 import 'package:baseketball_league_mobile/presentation/referee_feature/referee_list/bloc/referee_list_cubit.dart';
@@ -27,6 +29,11 @@ class _RefereeListScreenState extends State<RefereeListScreen> {
     super.initState();
     // Lấy danh sách trọng tài khi màn hình được khởi tạo
     context.read<RefereeListCubit>().getReferees();
+    _searchController.addListener(() {
+      Timer(const Duration(seconds: 1), () {
+        context.read<RefereeListCubit>().searchReferees(_searchController.text);
+      });
+    });
   }
 
   @override
@@ -82,9 +89,6 @@ class _RefereeListScreenState extends State<RefereeListScreen> {
             borderRadius: BorderRadius.circular(12.sp),
           ),
         ),
-        onSubmitted: (value) {
-          context.read<RefereeListCubit>().searchReferees(value);
-        },
       ),
     );
   }

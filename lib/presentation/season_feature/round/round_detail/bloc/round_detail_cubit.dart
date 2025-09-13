@@ -1,5 +1,6 @@
-import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.dart';
-import 'package:baseketball_league_mobile/domain/entities/round_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/round/round_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/round/top_scores_by_round_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_detail_entity.dart';
 import 'package:baseketball_league_mobile/domain/usecases/match_usecase.dart';
 import 'package:baseketball_league_mobile/domain/usecases/round_usecase.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/round/round_detail/bloc/round_detail_state.dart';
@@ -21,13 +22,25 @@ class RoundDetailCubit extends Cubit<RoundDetailState> {
   /// Thiết lập ID vòng đấu và tải dữ liệu
   void initial(int roundId) async {
     emit(state.copyWith(roundId: roundId, status: RoundDetailStatus.loading));
-    final results = await Future.wait([_loadRoundDetail(), _loadMatches()]);
+    final results = await Future.wait([
+      _loadRoundDetail(),
+      _loadMatches(),
+      _loadTopScoresByRound(),
+    ]);
     if (results[0] != null && results[1] != null) {
       emit(
         state.copyWith(
           round: results[0] as RoundEntity,
           matches: results[1] as List<MatchDetailEntity>,
+          topScoresByRound: results[2] as TopScoresByRoundEntity?,
           status: RoundDetailStatus.initial,
+        ),
+      );
+    } else {
+      emit(
+        state.copyWith(
+          status: RoundDetailStatus.failure,
+          errorMessage: 'Không tìm thấy thông tin vòng đấu',
         ),
       );
     }
@@ -53,6 +66,33 @@ class RoundDetailCubit extends Cubit<RoundDetailState> {
       },
       (round) {
         return round;
+      },
+    );
+  }
+
+  /// Tải cầu thủ có điểm số cao nhất trong vòng đấu
+  Future<TopScoresByRoundEntity?> _loadTopScoresByRound() async {
+    if (state.roundId == null) return null;
+
+    emit(state.copyWith(status: RoundDetailStatus.loading));
+
+    final result = await _roundUseCase.getTopScoresByRound(
+      seasonId: state.roundId!,
+      roundId: state.roundId!,
+    );
+
+    return result.fold(
+      (error) {
+        emit(
+          state.copyWith(
+            status: RoundDetailStatus.failure,
+            errorMessage: error.toString(),
+          ),
+        );
+        return null;
+      },
+      (topScoresByRound) {
+        return topScoresByRound;
       },
     );
   }
@@ -106,11 +146,5 @@ class RoundDetailCubit extends Cubit<RoundDetailState> {
         );
       },
     );
-  }
-
-  /// Làm mới dữ liệu
-  Future<void> refresh() async {
-    await _loadRoundDetail();
-    await _loadMatches();
   }
 }

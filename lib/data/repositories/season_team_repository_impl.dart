@@ -292,4 +292,92 @@ class SeasonTeamRepositoryImpl implements SeasonTeamRepository {
       );
     }
   }
+
+  @override
+  Future<Either<Exception, List<TeamStandingEntity>>>
+  getTeamStandingsByAwayWins({int? seasonId, int? teamId}) async {
+    try {
+      // Gọi API để lấy bảng xếp hạng
+      final result = await seasonTeamApi.getTeamStandingsByAwayWins(
+        seasonId: seasonId,
+        teamId: teamId,
+      );
+
+      // Xử lý kết quả trả về
+      return result.fold(
+        (exception) => Left(exception),
+        (models) => Right(models.map((model) => model.toEntity()).toList()),
+      );
+    } catch (e) {
+      return Left(
+        Exception('Lỗi khi lấy bảng xếp hạng đội bóng: ${e.toString()}'),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Exception, List<TeamStandingEntity>>>
+  getTeamStandingsByPointDifference({int? seasonId, int? teamId}) async {
+    try {
+      // Gọi API để lấy bảng xếp hạng
+      final result = await seasonTeamApi.getTeamStandingsByPointDifference(
+        seasonId: seasonId,
+        teamId: teamId,
+      );
+
+      // Xử lý kết quả trả về
+      return result.fold(
+        (exception) => Left(exception),
+        (models) => Right(models.map((model) => model.toEntity()).toList()),
+      );
+    } catch (e) {
+      return Left(
+        Exception('Lỗi khi lấy bảng xếp hạng đội bóng: ${e.toString()}'),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Exception, List<TeamStandingEntity>>>
+  getTeamStandingsByTotalFouls({int? seasonId, int? teamId}) async {
+    try {
+      // Gọi API để lấy bảng xếp hạng
+      final result = await seasonTeamApi.getTeamStandingsByTotalFouls(
+        seasonId: seasonId,
+        teamId: teamId,
+      );
+
+      // Xử lý kết quả trả về
+      return result.fold(
+        (exception) => Left(exception),
+        (models) => Right(models.map((model) => model.toEntity()).toList()),
+      );
+    } catch (e) {
+      return Left(
+        Exception('Lỗi khi lấy bảng xếp hạng đội bóng: ${e.toString()}'),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Exception, List<TeamStandingEntity>>>
+  getTeamStandingsByTotalPointsScored({int? seasonId, int? teamId}) async {
+    try {
+      // Gọi API để lấy bảng xếp hạng
+      final result = await seasonTeamApi.getTeamStandingsByTotalPointsScored(
+        seasonId: seasonId,
+        teamId: teamId,
+      );
+
+      // Xử lý kết quả trả về
+      return result.fold(
+        (exception) => Left(exception),
+        (models) => Right(models.map((model) => model.toEntity()).toList()),
+      );
+    } catch (e) {
+      return Left(
+        Exception('Lỗi khi lấy bảng xếp hạng đội bóng: ${e.toString()}'),
+      );
+    }
+  }
 }

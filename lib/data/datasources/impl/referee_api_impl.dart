@@ -168,8 +168,7 @@ class RefereeApiImpl implements RefereeApi {
           email
         FROM referee
         WHERE 
-          full_name ILIKE @name OR
-          unaccent(lower(full_name)) ILIKE unaccent(lower(@name))
+          lower(full_name) LIKE lower(@name)
         ORDER BY referee_id
       ''';
 

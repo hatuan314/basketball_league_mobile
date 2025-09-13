@@ -27,7 +27,7 @@ class _TeamStandingScreenState extends State<TeamStandingScreen> {
   void initState() {
     super.initState();
     // Lấy bảng xếp hạng khi màn hình được khởi tạo
-    context.read<TeamStandingCubit>().getTeamStandings(
+    context.read<TeamStandingCubit>().initial(
       widget.seasonId,
       widget.seasonName,
     );

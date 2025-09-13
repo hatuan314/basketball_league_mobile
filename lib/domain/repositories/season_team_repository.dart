@@ -33,6 +33,30 @@ abstract class SeasonTeamRepository {
     int? teamId,
   });
 
+  /// Lấy bảng xếp hạng đội bóng trong một mùa giải theo hiệu số điểm
+  /// [seasonId] là ID của mùa giải cần lấy bảng xếp hạng
+  /// Nếu [seasonId] là null, sẽ lấy bảng xếp hạng của tất cả các mùa giải
+  Future<Either<Exception, List<TeamStandingEntity>>>
+  getTeamStandingsByPointDifference({int? seasonId, int? teamId});
+
+  /// Lấy bảng xếp hạng đội bóng trong một mùa giải theo số điểm ghi được
+  /// [seasonId] là ID của mùa giải cần lấy bảng xếp hạng
+  /// Nếu [seasonId] là null, sẽ lấy bảng xếp hạng của tất cả các mùa giải
+  Future<Either<Exception, List<TeamStandingEntity>>>
+  getTeamStandingsByTotalPointsScored({int? seasonId, int? teamId});
+
+  /// Lấy bảng xếp hạng đội bóng trong một mùa giải theo số trận thắng sân khách
+  /// [seasonId] là ID của mùa giải cần lấy bảng xếp hạng
+  /// Nếu [seasonId] là null, sẽ lấy bảng xếp hạng của tất cả các mùa giải
+  Future<Either<Exception, List<TeamStandingEntity>>>
+  getTeamStandingsByAwayWins({int? seasonId, int? teamId});
+
+  /// Lấy bảng xếp hạng đội bóng trong một mùa giải theo số lỗi
+  /// [seasonId] là ID của mùa giải cần lấy bảng xếp hạng
+  /// Nếu [seasonId] là null, sẽ lấy bảng xếp hạng của tất cả các mùa giải
+  Future<Either<Exception, List<TeamStandingEntity>>>
+  getTeamStandingsByTotalFouls({int? seasonId, int? teamId});
+
   /// Tạo nhiều mối quan hệ giữa giải đấu và đội bóng cùng lúc
   /// [seasonId] là ID của mùa giải
   /// [teamIds] là danh sách ID của các đội bóng

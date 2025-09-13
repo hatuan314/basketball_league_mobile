@@ -1,6 +1,6 @@
-import 'package:baseketball_league_mobile/domain/entities/match_detail_entity.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_player_detail_entity.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_referee_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_player_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_referee_detail_entity.dart';
 
 /// Trạng thái của màn hình chi tiết trận đấu
 enum MatchDetailStatus {

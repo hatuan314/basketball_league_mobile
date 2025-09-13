@@ -1,5 +1,5 @@
-import 'package:baseketball_league_mobile/domain/entities/match_player_detail_entity.dart';
-import 'package:baseketball_league_mobile/domain/entities/match_player_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_player_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_player_entity.dart';
 import 'package:dartz/dartz.dart';
 
 /// Interface định nghĩa các phương thức usecase để quản lý thông tin cầu thủ trong trận đấu

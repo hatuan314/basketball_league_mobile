@@ -1,4 +1,5 @@
-import 'package:baseketball_league_mobile/domain/entities/round_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/round/round_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/round/top_scores_by_round_entity.dart';
 import 'package:baseketball_league_mobile/domain/repositories/round_repository.dart';
 import 'package:baseketball_league_mobile/domain/usecases/round_usecase.dart';
 import 'package:dartz/dartz.dart';
@@ -12,9 +13,7 @@ class RoundUseCaseImpl implements RoundUseCase {
   Future<Either<Exception, RoundEntity>> createRound(RoundEntity round) async {
     // Kiểm tra dữ liệu đầu vào
     if (round.seasonId == null || round.roundNo == null) {
-      return Left(
-        Exception('Thiếu thông tin bắt buộc: seasonId hoặc roundNo'),
-      );
+      return Left(Exception('Thiếu thông tin bắt buộc: seasonId hoặc roundNo'));
     }
 
     // Kiểm tra số thứ tự vòng đấu
@@ -25,9 +24,7 @@ class RoundUseCaseImpl implements RoundUseCase {
     // Kiểm tra ngày bắt đầu và kết thúc
     if (round.startDate != null && round.endDate != null) {
       if (round.startDate!.isAfter(round.endDate!)) {
-        return Left(
-          Exception('Ngày bắt đầu không thể sau ngày kết thúc'),
-        );
+        return Left(Exception('Ngày bắt đầu không thể sau ngày kết thúc'));
       }
     }
 
@@ -93,9 +90,7 @@ class RoundUseCaseImpl implements RoundUseCase {
 
     // Kiểm tra dữ liệu đầu vào
     if (round.seasonId == null || round.roundNo == null) {
-      return Left(
-        Exception('Thiếu thông tin bắt buộc: seasonId hoặc roundNo'),
-      );
+      return Left(Exception('Thiếu thông tin bắt buộc: seasonId hoặc roundNo'));
     }
 
     // Kiểm tra số thứ tự vòng đấu
@@ -106,13 +101,22 @@ class RoundUseCaseImpl implements RoundUseCase {
     // Kiểm tra ngày bắt đầu và kết thúc
     if (round.startDate != null && round.endDate != null) {
       if (round.startDate!.isAfter(round.endDate!)) {
-        return Left(
-          Exception('Ngày bắt đầu không thể sau ngày kết thúc'),
-        );
+        return Left(Exception('Ngày bắt đầu không thể sau ngày kết thúc'));
       }
     }
 
     // Gọi repository để cập nhật vòng đấu
     return await _repository.updateRound(round);
+  }
+
+  @override
+  Future<Either<Exception, TopScoresByRoundEntity>> getTopScoresByRound({
+    int? seasonId,
+    int? roundId,
+  }) {
+    return _repository.getTopScoresByRound(
+      seasonId: seasonId,
+      roundId: roundId,
+    );
   }
 }

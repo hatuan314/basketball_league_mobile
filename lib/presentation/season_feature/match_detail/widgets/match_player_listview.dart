@@ -1,4 +1,4 @@
-import 'package:baseketball_league_mobile/domain/entities/match_player_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/match/match_player_detail_entity.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
