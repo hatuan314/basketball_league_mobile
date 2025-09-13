@@ -1,4 +1,4 @@
-import 'package:baseketball_league_mobile/domain/entities/referee_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/referee/referee_entity.dart';
 import 'package:equatable/equatable.dart';
 
 /// Các trạng thái của màn hình danh sách trọng tài
@@ -66,16 +66,17 @@ class RefereeListState extends Equatable {
       referees: referees ?? this.referees,
       searchKeyword: searchKeyword ?? this.searchKeyword,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
-      generatedCount: clearGeneratedCount ? null : generatedCount ?? this.generatedCount,
+      generatedCount:
+          clearGeneratedCount ? null : generatedCount ?? this.generatedCount,
     );
   }
 
   @override
   List<Object?> get props => [
-        status,
-        referees,
-        searchKeyword,
-        errorMessage,
-        generatedCount,
-      ];
+    status,
+    referees,
+    searchKeyword,
+    errorMessage,
+    generatedCount,
+  ];
 }

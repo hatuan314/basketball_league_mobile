@@ -1,4 +1,4 @@
-import 'package:baseketball_league_mobile/domain/entities/referee_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/referee/referee_entity.dart';
 import 'package:baseketball_league_mobile/domain/usecases/referee_usecase.dart';
 import 'package:baseketball_league_mobile/presentation/referee_feature/referee_form/bloc/referee_form_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

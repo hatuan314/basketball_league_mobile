@@ -1,5 +1,5 @@
 import 'package:baseketball_league_mobile/common/enums.dart';
-import 'package:baseketball_league_mobile/domain/entities/referee_phone_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/referee/referee_phone_entity.dart';
 
 class RefereePhoneModel {
   int? refereeId;

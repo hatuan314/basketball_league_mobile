@@ -1,5 +1,5 @@
 import 'package:baseketball_league_mobile/common/assets/image_paths.dart';
-import 'package:baseketball_league_mobile/domain/entities/referee_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/referee/referee_entity.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_color.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/image/app_image_widget.dart';
 import 'package:flutter/material.dart';

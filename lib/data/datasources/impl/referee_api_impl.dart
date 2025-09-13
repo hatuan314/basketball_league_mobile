@@ -1,9 +1,10 @@
 import 'package:baseketball_league_mobile/common/injection.dart';
 import 'package:baseketball_league_mobile/common/postgresql/connect_database.dart';
 import 'package:baseketball_league_mobile/data/datasources/referee_api.dart';
-import 'package:baseketball_league_mobile/data/models/referee_detail_model.dart';
-import 'package:baseketball_league_mobile/data/models/referee_model.dart';
-import 'package:baseketball_league_mobile/data/models/referee_phone_model.dart';
+import 'package:baseketball_league_mobile/data/models/referee/referee_detail_model.dart';
+import 'package:baseketball_league_mobile/data/models/referee/referee_model.dart';
+import 'package:baseketball_league_mobile/data/models/referee/referee_monthly_salary_model.dart';
+import 'package:baseketball_league_mobile/data/models/referee/referee_phone_model.dart';
 import 'package:dartz/dartz.dart';
 import 'package:postgres/postgres.dart';
 
@@ -307,7 +308,7 @@ class RefereeApiImpl implements RefereeApi {
       return Left(Exception('Lỗi khi thêm số điện thoại: ${e.toString()}'));
     }
   }
-  
+
   @override
   Future<Either<Exception, bool>> updateRefereePhone(
     int refereeId,
@@ -325,59 +326,61 @@ class RefereeApiImpl implements RefereeApi {
       final checkRefereeQuery = '''
         SELECT COUNT(*) FROM referee WHERE referee_id = @refereeId
       ''';
-      
+
       final checkParams = {'refereeId': refereeId};
       final checkResult = await conn.execute(
         Sql.named(checkRefereeQuery),
         parameters: checkParams,
       );
-      
+
       final count = checkResult.first[0] as int;
       if (count == 0) {
         return Left(Exception('Trọng tài không tồn tại'));
       }
-      
+
       // Kiểm tra số điện thoại cũ có tồn tại không
       final checkOldPhoneQuery = '''
         SELECT COUNT(*) FROM referee_phone 
         WHERE referee_id = @refereeId AND phone = @oldPhone
       ''';
-      
+
       final checkOldPhoneParams = {
         'refereeId': refereeId,
         'oldPhone': oldPhone,
       };
-      
+
       final checkOldPhoneResult = await conn.execute(
         Sql.named(checkOldPhoneQuery),
         parameters: checkOldPhoneParams,
       );
-      
+
       final oldPhoneCount = checkOldPhoneResult.first[0] as int;
       if (oldPhoneCount == 0) {
         return Left(Exception('Số điện thoại cũ không tồn tại'));
       }
-      
+
       // Kiểm tra số điện thoại mới đã tồn tại cho trọng tài khác chưa
       if (oldPhone != refereePhone.phoneNumber) {
         final checkNewPhoneQuery = '''
           SELECT COUNT(*) FROM referee_phone 
           WHERE referee_id = @refereeId AND phone = @newPhone
         ''';
-        
+
         final checkNewPhoneParams = {
           'refereeId': refereeId,
           'newPhone': refereePhone.phoneNumber,
         };
-        
+
         final checkNewPhoneResult = await conn.execute(
           Sql.named(checkNewPhoneQuery),
           parameters: checkNewPhoneParams,
         );
-        
+
         final newPhoneCount = checkNewPhoneResult.first[0] as int;
         if (newPhoneCount > 0) {
-          return Left(Exception('Số điện thoại mới đã tồn tại cho trọng tài này'));
+          return Left(
+            Exception('Số điện thoại mới đã tồn tại cho trọng tài này'),
+          );
         }
       }
 
@@ -409,9 +412,10 @@ class RefereeApiImpl implements RefereeApi {
       return Left(Exception('Lỗi khi cập nhật số điện thoại: ${e.toString()}'));
     }
   }
-  
+
   @override
-  Future<Either<Exception, List<RefereeDetailModel>>> getRefereeDetailList() async {
+  Future<Either<Exception, List<RefereeDetailModel>>>
+  getRefereeDetailList() async {
     try {
       final conn = sl.get<PostgresConnection>().conn;
 
@@ -434,7 +438,8 @@ class RefereeApiImpl implements RefereeApi {
       final result = await conn.execute(Sql.named(query));
 
       // Chuyển đổi kết quả thành danh sách RefereeDetailModel
-      final refereeDetailList = result.map((row) => RefereeDetailModel.fromPostgres(row)).toList();
+      final refereeDetailList =
+          result.map((row) => RefereeDetailModel.fromPostgres(row)).toList();
 
       // Nhóm các số điện thoại theo refereeId
       final Map<int, List<String>> phonesByRefereeId = {};
@@ -448,23 +453,28 @@ class RefereeApiImpl implements RefereeApi {
       // Loại bỏ các bản ghi trùng lặp và tạo danh sách kết quả cuối cùng
       final Map<int, RefereeDetailModel> uniqueReferees = {};
       for (final detail in refereeDetailList) {
-        if (detail.refereeId != null && !uniqueReferees.containsKey(detail.refereeId)) {
+        if (detail.refereeId != null &&
+            !uniqueReferees.containsKey(detail.refereeId)) {
           uniqueReferees[detail.refereeId!] = detail;
         }
       }
 
       final List<RefereeDetailModel> finalList = uniqueReferees.values.toList();
-      
+
       return Right(finalList);
     } catch (e) {
       return Left(
-        Exception('Lỗi khi lấy danh sách thông tin chi tiết trọng tài: ${e.toString()}'),
+        Exception(
+          'Lỗi khi lấy danh sách thông tin chi tiết trọng tài: ${e.toString()}',
+        ),
       );
     }
   }
-  
+
   @override
-  Future<Either<Exception, RefereeDetailModel?>> getRefereeDetailById(int refereeId) async {
+  Future<Either<Exception, RefereeDetailModel?>> getRefereeDetailById(
+    int refereeId,
+  ) async {
     try {
       final conn = sl.get<PostgresConnection>().conn;
 
@@ -511,6 +521,39 @@ class RefereeApiImpl implements RefereeApi {
     } catch (e) {
       return Left(
         Exception('Lỗi khi lấy thông tin chi tiết trọng tài: ${e.toString()}'),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Exception, List<RefereeMonthlySalaryModel>>>
+  getRefereeMonthlySalaryListById(int refereeId) async {
+    final conn = sl.get<PostgresConnection>().conn;
+
+    if (!conn.isOpen) {
+      await sl.get<PostgresConnection>().connectDb();
+    }
+
+    try {
+      final query =
+          '''SELECT referee_id, referee_name, main_referee_salary, table_referee_salary, total_salary, year, month FROM referee_monthly_salary WHERE referee_id = $refereeId''';
+
+      final result = await conn.execute(Sql.named(query));
+
+      if (result.isEmpty) {
+        return const Right([]);
+      }
+
+      final List<RefereeMonthlySalaryModel> refereeMonthlySalaryList =
+          result
+              .map((row) => RefereeMonthlySalaryModel.fromPostgres(row))
+              .toList();
+
+      return Right(refereeMonthlySalaryList);
+    } catch (e) {
+      print('Lỗi khi lấy danh sách lương của trọng tài: ${e.toString()}');
+      return Left(
+        Exception('Lỗi khi lấy danh sách lương của trọng tài: ${e.toString()}'),
       );
     }
   }

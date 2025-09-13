@@ -1,4 +1,4 @@
-import 'package:baseketball_league_mobile/data/models/referee_model.dart';
+import 'package:baseketball_league_mobile/data/models/referee/referee_model.dart';
 
 /// Danh sách mock 100 trọng tài bóng rổ
 final List<RefereeModel> mockReferees = [

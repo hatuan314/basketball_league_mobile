@@ -3,6 +3,8 @@ import 'package:baseketball_league_mobile/common/constants/router_name.dart';
 import 'package:baseketball_league_mobile/common/extentions/route_extension.dart';
 import 'package:baseketball_league_mobile/presentation/referee_feature/referee_detail/bloc/referee_detail_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/referee_feature/referee_detail/bloc/referee_detail_state.dart';
+import 'package:baseketball_league_mobile/presentation/referee_feature/referee_detail/widgets/referee_info_widget.dart';
+import 'package:baseketball_league_mobile/presentation/referee_feature/referee_detail/widgets/referee_monthly_salary_listview.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_color.dart';
 import 'package:baseketball_league_mobile/presentation/theme/app_style.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/app_error_state_widget.dart';
@@ -30,7 +32,7 @@ class _RefereeDetailScreenState extends State<RefereeDetailScreen> {
   void initState() {
     super.initState();
     // Lấy thông tin chi tiết trọng tài khi màn hình được khởi tạo
-    context.read<RefereeDetailCubit>().getRefereeDetail(widget.refereeId);
+    context.read<RefereeDetailCubit>().initia(widget.refereeId);
   }
 
   @override
@@ -110,16 +112,10 @@ class _RefereeDetailScreenState extends State<RefereeDetailScreen> {
                 ),
                 SizedBox(height: 32.sp),
                 // Thông tin chi tiết
-                _buildInfoItem(
-                  icon: Icons.numbers,
-                  title: 'ID',
-                  value: '${referee.id}',
-                ),
-                _buildDivider(),
-                _buildInfoItem(
-                  icon: Icons.email_outlined,
-                  title: 'Email',
-                  value: referee.email ?? 'Không có email',
+                RefereeInfoWidget(referee: state.referee!),
+                SizedBox(height: 32.sp),
+                RefereeMonthlySalaryListview(
+                  monthlySalaries: state.monthlySalaries!,
                 ),
               ],
             ),
@@ -163,14 +159,6 @@ class _RefereeDetailScreenState extends State<RefereeDetailScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  /// Xây dựng đường phân cách
-  Widget _buildDivider() {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.sp),
-      child: Divider(color: AppColors.grey.withOpacity(0.3), thickness: 1),
     );
   }
 }

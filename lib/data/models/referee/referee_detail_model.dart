@@ -1,4 +1,4 @@
-import 'package:baseketball_league_mobile/domain/entities/referee_detail_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/referee/referee_detail_entity.dart';
 
 class RefereeDetailModel {
   int? refereeId;

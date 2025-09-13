@@ -1,7 +1,8 @@
 import 'package:baseketball_league_mobile/data/datasources/mock/referee_mock.dart';
 import 'package:baseketball_league_mobile/data/datasources/referee_api.dart';
-import 'package:baseketball_league_mobile/data/models/referee_model.dart';
-import 'package:baseketball_league_mobile/domain/entities/referee_entity.dart';
+import 'package:baseketball_league_mobile/data/models/referee/referee_model.dart';
+import 'package:baseketball_league_mobile/domain/entities/referee/referee_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/referee/referee_monthly_salary_entity.dart';
 import 'package:baseketball_league_mobile/domain/repositories/referee_repository.dart';
 import 'package:dartz/dartz.dart';
 
@@ -164,5 +165,20 @@ class RefereeRepositoryImpl implements RefereeRepository {
     } catch (e) {
       return Left(Exception('Lỗi khi thêm dữ liệu trọng tài từ data mock: $e'));
     }
+  }
+
+  @override
+  Future<Either<Exception, List<RefereeMonthlySalaryEntity>>>
+  getRefereeMonthlySalaryListById(int refereeId) async {
+    final results = await _refereeApi.getRefereeMonthlySalaryListById(
+      refereeId,
+    );
+    return results.fold((exception) => Left(exception), (
+      refereeMonthlySalaryModels,
+    ) {
+      final refereeMonthlySalaryEntities =
+          refereeMonthlySalaryModels.map((model) => model.toEntity()).toList();
+      return Right(refereeMonthlySalaryEntities);
+    });
   }
 }

@@ -1,4 +1,5 @@
-import 'package:baseketball_league_mobile/domain/entities/referee_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/referee/referee_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/referee/referee_monthly_salary_entity.dart';
 import 'package:baseketball_league_mobile/domain/repositories/referee_repository.dart';
 import 'package:baseketball_league_mobile/domain/usecases/referee_usecase.dart';
 import 'package:dartz/dartz.dart';
@@ -8,9 +9,8 @@ class RefereeUsecaseImpl implements RefereeUsecase {
   final RefereeRepository _refereeRepository;
 
   /// Constructor
-  RefereeUsecaseImpl({
-    required RefereeRepository refereeRepository,
-  }) : _refereeRepository = refereeRepository;
+  RefereeUsecaseImpl({required RefereeRepository refereeRepository})
+    : _refereeRepository = refereeRepository;
 
   @override
   Future<Either<Exception, List<RefereeEntity>>> getRefereeList() async {
@@ -135,6 +135,21 @@ class RefereeUsecaseImpl implements RefereeUsecase {
       return await _refereeRepository.generateMockRefereeData();
     } catch (e) {
       return Left(Exception('Lỗi khi thêm dữ liệu trọng tài từ data mock: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, List<RefereeMonthlySalaryEntity>>>
+  getRefereeMonthlySalaryListById(int refereeId) async {
+    try {
+      // Gọi repository để lấy danh sách lương của trọng tài theo tháng
+      return await _refereeRepository.getRefereeMonthlySalaryListById(
+        refereeId,
+      );
+    } catch (e) {
+      return Left(
+        Exception('Lỗi khi lấy danh sách lương của trọng tài theo tháng: $e'),
+      );
     }
   }
 }

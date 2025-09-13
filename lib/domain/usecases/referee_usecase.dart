@@ -1,4 +1,5 @@
-import 'package:baseketball_league_mobile/domain/entities/referee_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/referee/referee_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/referee/referee_monthly_salary_entity.dart';
 import 'package:dartz/dartz.dart';
 
 /// Interface định nghĩa các phương thức usecase để quản lý thông tin trọng tài
@@ -36,16 +37,24 @@ abstract class RefereeUsecase {
   ///
   /// Trả về danh sách trọng tài phù hợp nếu thành công hoặc Exception nếu thất bại
   Future<Either<Exception, List<RefereeEntity>>> searchReferee(String name);
-  
+
   /// Lấy thông tin chi tiết của một trọng tài theo ID
   ///
   /// [refereeId]: ID của trọng tài cần lấy thông tin
   ///
   /// Trả về thông tin trọng tài nếu thành công hoặc Exception nếu thất bại
   Future<Either<Exception, RefereeEntity?>> getRefereeById(int refereeId);
-  
+
   /// Tự động thêm dữ liệu trọng tài từ data mock vào database
   ///
   /// Trả về số lượng bản ghi đã thêm thành công nếu thành công hoặc Exception nếu thất bại
   Future<Either<Exception, int>> generateMockRefereeData();
+
+  /// Lấy danh sách lương của trọng tài theo tháng
+  ///
+  /// [refereeId]: ID của trọng tài cần lấy thông tin
+  ///
+  /// Trả về danh sách lương của trọng tài nếu thành công hoặc Exception nếu thất bại
+  Future<Either<Exception, List<RefereeMonthlySalaryEntity>>>
+  getRefereeMonthlySalaryListById(int refereeId);
 }

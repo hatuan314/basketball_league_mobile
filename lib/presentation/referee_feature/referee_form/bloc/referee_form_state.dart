@@ -1,4 +1,4 @@
-import 'package:baseketball_league_mobile/domain/entities/referee_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/referee/referee_entity.dart';
 import 'package:equatable/equatable.dart';
 
 /// Các trạng thái của màn hình form trọng tài

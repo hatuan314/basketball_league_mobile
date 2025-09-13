@@ -530,14 +530,12 @@ class ConfigView {
                     ref.full_name AS referee_name,
                     EXTRACT(YEAR FROM m.match_datetime) AS year,
                     EXTRACT(MONTH FROM m.match_datetime) AS month,
-                    TO_CHAR(m.match_datetime, 'Month YYYY') AS month_year,
                     COUNT(CASE WHEN mr.role = 'MAIN' THEN 1 ELSE NULL END) AS main_referee_matches,
-                    COUNT(CASE WHEN mr.role = 'ASSISTANT' THEN 1 ELSE NULL END) AS assistant_referee_matches,
                     COUNT(CASE WHEN mr.role = 'TABLE' THEN 1 ELSE NULL END) AS table_referee_matches,
                     COUNT(CASE WHEN mr.role = 'MAIN' THEN 1 ELSE NULL END) * 1000000 AS main_referee_salary,
-                    COUNT(CASE WHEN mr.role IN ('ASSISTANT', 'TABLE') THEN 1 ELSE NULL END) * 500000 AS other_referee_salary,
+                    COUNT(CASE WHEN mr.role = 'TABLE' THEN 1 ELSE NULL END) * 500000 AS table_referee_salary,
                     (COUNT(CASE WHEN mr.role = 'MAIN' THEN 1 ELSE NULL END) * 1000000) + 
-                    (COUNT(CASE WHEN mr.role IN ('ASSISTANT', 'TABLE') THEN 1 ELSE NULL END) * 500000) AS total_salary
+                    (COUNT(CASE WHEN mr.role = 'TABLE' THEN 1 ELSE NULL END) * 500000) AS total_salary
                 FROM 
                     referee ref
                 JOIN 
@@ -545,7 +543,7 @@ class ConfigView {
                 JOIN 
                     match m ON mr.match_id = m.match_id
                 GROUP BY 
-                    ref.referee_id, ref.full_name, EXTRACT(YEAR FROM m.match_datetime), EXTRACT(MONTH FROM m.match_datetime), TO_CHAR(m.match_datetime, 'Month YYYY')
+                    ref.referee_id, ref.full_name, EXTRACT(YEAR FROM m.match_datetime), EXTRACT(MONTH FROM m.match_datetime)
                 ORDER BY 
                     year DESC, month DESC, referee_id;
                 ''';
