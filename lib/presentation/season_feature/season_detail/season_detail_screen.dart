@@ -63,9 +63,12 @@ class _SeasonDetailScreenState extends State<SeasonDetailScreen> {
             MenuButtonWidget(
               iconPath: AppImagePaths.sports_basketball_shirt_player,
               color: AppColors.orange,
-              title: "Danh sách\náo đấu",
+              title: "Bảng xếp hạng\ncầu thủ",
               onTap: () {
-                context.push(RouterName.playerList);
+                context.push(
+                  RouterName.topPlayer.toSeasonDetailRoute(),
+                  extra: widget.season.id,
+                );
               },
             ),
           ],

@@ -1,7 +1,9 @@
 import 'package:baseketball_league_mobile/data/datasources/mock/season_mock.dart';
 import 'package:baseketball_league_mobile/data/datasources/season_api.dart';
 import 'package:baseketball_league_mobile/data/models/season_model.dart';
+import 'package:baseketball_league_mobile/domain/entities/least_fouls_player_season_entity.dart';
 import 'package:baseketball_league_mobile/domain/entities/season_entity.dart';
+import 'package:baseketball_league_mobile/domain/entities/top_scores_season_entity.dart';
 import 'package:baseketball_league_mobile/domain/repositories/season_repository.dart';
 import 'package:dartz/dartz.dart';
 
@@ -13,25 +15,19 @@ class SeasonRepositoryImpl implements SeasonRepository {
   @override
   Future<Either<Exception, bool>> createSeason(SeasonEntity season) async {
     final result = await seasonApi.createSeason(SeasonModel.fromEntity(season));
-    return result.fold(
-      (exception) {
-        print('Lỗi khi tạo mùa giải: $exception');
-        return Left(exception);
-      },
-      (success) => Right(success),
-    );
+    return result.fold((exception) {
+      print('Lỗi khi tạo mùa giải: $exception');
+      return Left(exception);
+    }, (success) => Right(success));
   }
 
   @override
   Future<Either<Exception, bool>> deleteSeason(int id) async {
     final result = await seasonApi.deleteSeason(id);
-    return result.fold(
-      (exception) {
-        print('Lỗi khi xóa mùa giải: $exception');
-        return Left(exception);
-      },
-      (success) => Right(success),
-    );
+    return result.fold((exception) {
+      print('Lỗi khi xóa mùa giải: $exception');
+      return Left(exception);
+    }, (success) => Right(success));
   }
 
   @override
@@ -40,27 +36,24 @@ class SeasonRepositoryImpl implements SeasonRepository {
     final results = await Future.wait(
       seasonModels.map((seasonModel) => seasonApi.createSeason(seasonModel)),
     );
-    
+
     // Kiểm tra kết quả từ mỗi Either
     bool allSuccess = true;
     Exception? firstException;
-    
+
     for (var result in results) {
-      final isSuccess = result.fold(
-        (exception) {
-          print('Lỗi khi tạo mùa giải: $exception');
-          if (firstException == null) {
-            firstException = exception;
-          }
-          return false;
-        },
-        (success) => success,
-      );
+      final isSuccess = result.fold((exception) {
+        print('Lỗi khi tạo mùa giải: $exception');
+        if (firstException == null) {
+          firstException = exception;
+        }
+        return false;
+      }, (success) => success);
       if (!isSuccess) {
         allSuccess = false;
       }
     }
-    
+
     if (!allSuccess && firstException != null) {
       return Left(firstException!);
     }
@@ -68,7 +61,9 @@ class SeasonRepositoryImpl implements SeasonRepository {
   }
 
   @override
-  Future<Either<Exception, List<SeasonEntity>>> getSeasonByName(String name) async {
+  Future<Either<Exception, List<SeasonEntity>>> getSeasonByName(
+    String name,
+  ) async {
     final results = await seasonApi.searchSeason(name);
     return results.fold(
       (exception) {
@@ -93,13 +88,38 @@ class SeasonRepositoryImpl implements SeasonRepository {
 
   @override
   Future<Either<Exception, bool>> updateSeason(SeasonEntity season) async {
-    final result = await seasonApi.updateSeason(season.id!, SeasonModel.fromEntity(season));
-    return result.fold(
-      (exception) {
-        print('Lỗi khi cập nhật mùa giải: $exception');
-        return Left(exception);
-      },
-      (success) => Right(success),
+    final result = await seasonApi.updateSeason(
+      season.id!,
+      SeasonModel.fromEntity(season),
     );
+    return result.fold((exception) {
+      print('Lỗi khi cập nhật mùa giải: $exception');
+      return Left(exception);
+    }, (success) => Right(success));
+  }
+
+  @override
+  Future<Either<Exception, List<LeastFoulsPlayerSeasonEntity>>>
+  getTopLeastFoulsPlayerSeason(int seasonId, {int limit = 10}) async {
+    final result = await seasonApi.getTopLeastFoulsPlayerSeason(
+      seasonId,
+      limit: limit,
+    );
+    return result.fold((exception) {
+      print('Lỗi khi lấy danh sách cầu thủ ghi ít nhất điểm nhất: $exception');
+      return Left(exception);
+    }, (dataList) => Right(dataList.map((data) => data.toEntity()).toList()));
+  }
+
+  @override
+  Future<Either<Exception, List<TopScoresSeasonEntity>>> getTopScoresSeason(
+    int seasonId, {
+    int limit = 10,
+  }) async {
+    final result = await seasonApi.getTopScoresSeason(seasonId, limit: limit);
+    return result.fold((exception) {
+      print('Lỗi khi lấy danh sách cầu thủ ghi ít nhất điểm nhất: $exception');
+      return Left(exception);
+    }, (dataList) => Right(dataList.map((data) => data.toEntity()).toList()));
   }
 }

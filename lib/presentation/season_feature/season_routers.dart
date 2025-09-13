@@ -15,6 +15,8 @@ import 'package:baseketball_league_mobile/presentation/season_feature/season_tea
 import 'package:baseketball_league_mobile/presentation/season_feature/season_team_detail/season_team_detail_screen.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/team_standing/bloc/team_standing_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/team_standing/team_standing_screen.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/top_player/bloc/top_player_season_cubit.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/top_player/top_player_season_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
@@ -44,6 +46,16 @@ RouteBase seasonRouter = GoRoute(
                 seasonId: season.id!,
                 seasonName: season.name!,
               ),
+            );
+          },
+        ),
+        GoRoute(
+          path: RouterName.topPlayer,
+          builder: (context, state) {
+            final seasonId = state.extra as int;
+            return BlocProvider(
+              create: (_) => GetIt.instance<TopPlayerSeasonCubit>(),
+              child: TopPlayerScreen(seasonId: seasonId),
             );
           },
         ),

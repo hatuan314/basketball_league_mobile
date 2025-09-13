@@ -10,6 +10,7 @@ class RouterName {
   static const String roundList = 'round_list';
   static const String roundDetail = 'round_detail';
   static const String matchDetail = 'match_detail';
+  static const String topPlayer = 'top_player';
 
   /// Team
   static const String teamList = '/team_list';

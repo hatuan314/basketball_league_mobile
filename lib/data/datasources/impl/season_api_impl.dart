@@ -1,7 +1,9 @@
 import 'package:baseketball_league_mobile/common/injection.dart';
 import 'package:baseketball_league_mobile/common/postgresql/connect_database.dart';
 import 'package:baseketball_league_mobile/data/datasources/season_api.dart';
+import 'package:baseketball_league_mobile/data/models/least_fouls_player_season_model.dart';
 import 'package:baseketball_league_mobile/data/models/season_model.dart';
+import 'package:baseketball_league_mobile/data/models/top_scores_season_model.dart';
 import 'package:dartz/dartz.dart';
 
 class SeasonApiImpl implements SeasonApi {
@@ -84,13 +86,13 @@ class SeasonApiImpl implements SeasonApi {
     try {
       // Đảm bảo extension unaccent được cài đặt
       await conn.execute('CREATE EXTENSION IF NOT EXISTS unaccent');
-      
+
       // Sử dụng unaccent để tìm kiếm không phân biệt dấu
       final query = '''
         SELECT * FROM season 
         WHERE unaccent(LOWER(name)) LIKE unaccent(LOWER('%$name%'))
       ''';
-      
+
       final results = await conn.execute(query);
       return Right(results.map((row) => _seasonFromRow(row)).toList());
     } catch (e) {
@@ -100,7 +102,10 @@ class SeasonApiImpl implements SeasonApi {
   }
 
   @override
-  Future<Either<Exception, bool>> updateSeason(int id, SeasonModel season) async {
+  Future<Either<Exception, bool>> updateSeason(
+    int id,
+    SeasonModel season,
+  ) async {
     final conn = sl<PostgresConnection>().conn;
     try {
       final query = '''
@@ -130,5 +135,69 @@ class SeasonApiImpl implements SeasonApi {
       startDate: row[3] != null ? DateTime.parse(row[3].toString()) : null,
       endDate: row[4] != null ? DateTime.parse(row[4].toString()) : null,
     );
+  }
+
+  @override
+  Future<Either<Exception, List<TopScoresSeasonModel>>> getTopScoresSeason(
+    int seasonId, {
+    int limit = 10,
+  }) async {
+    final conn = sl<PostgresConnection>().conn;
+    try {
+      // Sử dụng unaccent để tìm kiếm không phân biệt dấu
+      final query = '''
+        SELECT 
+          season_id,
+          season_name,
+          player_id,
+          player_code,
+          player_name,
+          team_id,
+          team_name,
+          total_points
+        FROM top_scorers WHERE season_id = $seasonId ORDER BY total_points DESC LIMIT $limit
+      ''';
+
+      final results = await conn.execute(query);
+      return Right(
+        results.map((row) => TopScoresSeasonModel.fromPostgres(row)).toList(),
+      );
+    } catch (e) {
+      print('Lỗi khi lấy danh sách cầu thủ ghi nhiều điểm nhất: $e');
+      return Left(
+        Exception('Lỗi khi lấy danh sách cầu thủ ghi nhiều điểm nhất: $e'),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Exception, List<LeastFoulsPlayerSeasonModel>>>
+  getTopLeastFoulsPlayerSeason(int seasonId, {int limit = 10}) async {
+    final conn = sl<PostgresConnection>().conn;
+    try {
+      // Sử dụng unaccent để tìm kiếm không phân biệt dấu
+      final query = '''
+        SELECT 
+          season_id,
+          season_name,
+          player_id,
+          player_code,
+          player_name,
+          team_id,
+          team_name,
+          total_fouls
+        FROM least_fouls_players WHERE season_id = $seasonId ORDER BY total_fouls ASC LIMIT $limit
+      ''';
+
+      final results = await conn.execute(query);
+      return Right(
+        results
+            .map((row) => LeastFoulsPlayerSeasonModel.fromPostgres(row))
+            .toList(),
+      );
+    } catch (e) {
+      print('Lỗi khi lấy danh sách cầu thủ ghi ít nhất: $e');
+      return Left(Exception('Lỗi khi lấy danh sách cầu thủ ghi ít nhất: $e'));
+    }
   }
 }

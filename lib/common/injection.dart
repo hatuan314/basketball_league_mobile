@@ -87,6 +87,7 @@ import 'package:baseketball_league_mobile/presentation/season_feature/round/roun
 import 'package:baseketball_league_mobile/presentation/season_feature/season_list/bloc/season_list_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/season_team_detail/bloc/season_team_detail_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/season_feature/team_standing/bloc/team_standing_cubit.dart';
+import 'package:baseketball_league_mobile/presentation/season_feature/top_player/bloc/top_player_season_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/stadium_feature/stadium_list/bloc/stadium_list_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/team_feature/team_edit/bloc/team_edit_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/team_feature/team_list/bloc/team_list_cubit.dart';
@@ -168,6 +169,9 @@ void blocDependencies() {
   );
   sl.registerFactory<RefereeFormCubit>(
     () => RefereeFormCubit(refereeUsecase: sl<RefereeUsecase>()),
+  );
+  sl.registerFactory<TopPlayerSeasonCubit>(
+    () => TopPlayerSeasonCubit(seasonUsecase: sl<SeasonUsecase>()),
   );
 }
 

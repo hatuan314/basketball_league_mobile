@@ -508,7 +508,7 @@ class ConfigView {
                 )
                 SELECT * 
                 FROM player_stats
-                WHERE matches_played >= 5 -- Chỉ xét cầu thủ tham gia ít nhất 5 trận
+                WHERE matches_played >= 1 -- Chỉ xét cầu thủ tham gia ít nhất 5 trận
                 ORDER BY season_id, fouls_per_match ASC, total_fouls ASC;
                 ''';
     await _conn.execute(query);
