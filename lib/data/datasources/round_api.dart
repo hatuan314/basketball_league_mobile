@@ -54,7 +54,7 @@ abstract class RoundApi {
   /// [roundId] ID của vòng đấu (có thể null để lấy tất cả vòng đấu)
   ///
   /// Trả về [TopScoresByRoundModel] nếu thành công hoặc [Exception] nếu thất bại
-  Future<Either<Exception, TopScoresByRoundModel>> getTopScoresByRound({
+  Future<Either<Exception, TopScoresByRoundModel?>> getTopScoresByRound({
     int? seasonId,
     int? roundId,
   });

@@ -52,7 +52,7 @@ abstract class RoundRepository {
   /// [roundId] ID của vòng đấu (có thể null để lấy tất cả vòng đấu)
   ///
   /// Trả về [TopScoresByRoundEntity] nếu thành công hoặc [Exception] nếu thất bại
-  Future<Either<Exception, TopScoresByRoundEntity>> getTopScoresByRound({
+  Future<Either<Exception, TopScoresByRoundEntity?>> getTopScoresByRound({
     int? seasonId,
     int? roundId,
   });

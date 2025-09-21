@@ -285,7 +285,7 @@ class RoundApiImpl implements RoundApi {
   }
 
   @override
-  Future<Either<Exception, TopScoresByRoundModel>> getTopScoresByRound({
+  Future<Either<Exception, TopScoresByRoundModel?>> getTopScoresByRound({
     int? seasonId,
     int? roundId,
   }) async {
@@ -326,7 +326,7 @@ class RoundApiImpl implements RoundApi {
         );
         return Right(topScoresByRound);
       } else {
-        return Left(Exception('Không tìm thấy vòng đấu với ID: $id'));
+        return Right(null);
       }
     } catch (e) {
       return Left(Exception('Lỗi khi lấy thông tin vòng đấu: ${e.toString()}'));

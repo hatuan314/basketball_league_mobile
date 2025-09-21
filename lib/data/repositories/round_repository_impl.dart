@@ -183,7 +183,7 @@ class RoundRepositoryImpl implements RoundRepository {
   }
 
   @override
-  Future<Either<Exception, TopScoresByRoundEntity>> getTopScoresByRound({
+  Future<Either<Exception, TopScoresByRoundEntity?>> getTopScoresByRound({
     int? seasonId,
     int? roundId,
   }) async {
@@ -197,7 +197,7 @@ class RoundRepositoryImpl implements RoundRepository {
       // Xử lý kết quả
       return result.fold(
         (exception) => Left(exception),
-        (model) => Right(model.toEntity()),
+        (model) => Right(model?.toEntity()),
       );
     } catch (e) {
       return Left(

@@ -12,43 +12,44 @@ class SeasonItemCard extends StatelessWidget {
   final SeasonEntity season;
   final Function(SeasonEntity)? onEdit;
   final Function(SeasonEntity)? onDelete;
-  
+
   const SeasonItemCard({
-    super.key, 
+    super.key,
     required this.season,
     this.onEdit,
     this.onDelete,
   });
-  
+
   /// Kiểm tra xem giải đấu đã bắt đầu hay chưa
   bool get isSeasonStarted {
     if (season.startDate == null) return false;
     return DateTime.now().isAfter(season.startDate!);
   }
-  
+
   /// Kiểm tra xem giải đấu đã kết thúc hay chưa
   bool get isSeasonEnded {
     if (season.endDate == null) return false;
     return DateTime.now().isAfter(season.endDate!);
   }
-  
+
   /// Lấy trạng thái của giải đấu
   String get seasonStatus {
     if (isSeasonEnded) return 'Đã kết thúc';
     if (isSeasonStarted) return 'Đang diễn ra';
     return 'Chưa bắt đầu';
   }
-  
+
   /// Lấy màu cho trạng thái của giải đấu
   Color get seasonStatusColor {
     if (isSeasonEnded) return Colors.grey;
     if (isSeasonStarted) return Colors.green;
     return Colors.orange;
   }
-  
+
   /// Kiểm tra xem giải đấu có thể chỉnh sửa/xóa hay không
   bool get canEditOrDelete {
-    return !isSeasonStarted;
+    // return !isSeasonStarted;
+    return true;
   }
 
   @override
@@ -98,27 +99,34 @@ class SeasonItemCard extends StatelessWidget {
                   if (onEdit != null)
                     IconButton(
                       icon: Icon(
-                        Icons.edit, 
-                        size: 20.sp, 
+                        Icons.edit,
+                        size: 20.sp,
                         color: canEditOrDelete ? Colors.blue : Colors.grey,
                       ),
                       padding: EdgeInsets.all(4.r),
                       constraints: BoxConstraints(),
                       onPressed: canEditOrDelete ? () => onEdit!(season) : null,
-                      tooltip: canEditOrDelete ? 'Sửa' : 'Không thể sửa giải đấu đã bắt đầu',
+                      tooltip:
+                          canEditOrDelete
+                              ? 'Sửa'
+                              : 'Không thể sửa giải đấu đã bắt đầu',
                     ),
                   // Nút xóa - chỉ hiển thị và cho phép xóa nếu giải đấu chưa bắt đầu
                   if (onDelete != null)
                     IconButton(
                       icon: Icon(
-                        Icons.delete, 
-                        size: 20.sp, 
+                        Icons.delete,
+                        size: 20.sp,
                         color: canEditOrDelete ? Colors.red : Colors.grey,
                       ),
                       padding: EdgeInsets.all(4.r),
                       constraints: BoxConstraints(),
-                      onPressed: canEditOrDelete ? () => onDelete!(season) : null,
-                      tooltip: canEditOrDelete ? 'Xóa' : 'Không thể xóa giải đấu đã bắt đầu',
+                      onPressed:
+                          canEditOrDelete ? () => onDelete!(season) : null,
+                      tooltip:
+                          canEditOrDelete
+                              ? 'Xóa'
+                              : 'Không thể xóa giải đấu đã bắt đầu',
                     ),
                 ],
               ),
@@ -136,7 +144,10 @@ class SeasonItemCard extends StatelessWidget {
                   Spacer(),
                   // Hiển thị trạng thái của giải đấu
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 4.h,
+                    ),
                     decoration: BoxDecoration(
                       color: seasonStatusColor.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12.r),

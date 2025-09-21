@@ -136,10 +136,10 @@ class ConfigTrigger {
 
     // Tạo trigger
     final createTrigger = '''
-      CREATE TRIGGER enforce_player_code_format
-        AFTER INSERT OR UPDATE ON player_season
+    CREATE TRIGGER enforce_player_code_format
+        BEFORE INSERT OR UPDATE ON player_season
         FOR EACH ROW
-      EXECUTE FUNCTION check_player_code_format();
+    EXECUTE FUNCTION check_player_code_format();
     ''';
     await _conn.execute(createTrigger);
   }

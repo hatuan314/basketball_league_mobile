@@ -51,8 +51,8 @@ abstract class RoundUseCase {
   /// [seasonId] ID của mùa giải (có thể null để lấy tất cả mùa giải)
   /// [roundId] ID của vòng đấu (có thể null để lấy tất cả vòng đấu)
   ///
-  /// Trả về [TopScoresByRoundEntity] nếu thành công hoặc [Exception] nếu thất bại
-  Future<Either<Exception, TopScoresByRoundEntity>> getTopScoresByRound({
+  /// Trả về [TopScoresByRoundEntity?] nếu thành công hoặc [Exception] nếu thất bại
+  Future<Either<Exception, TopScoresByRoundEntity?>> getTopScoresByRound({
     int? seasonId,
     int? roundId,
   });

@@ -283,7 +283,7 @@ class RefereeApiImpl implements RefereeApi {
         INSERT INTO referee_phone (
           referee_id, 
           phone,
-          phone_type
+          type
         ) VALUES (
           @refereeId, 
           @phone,
@@ -388,7 +388,7 @@ class RefereeApiImpl implements RefereeApi {
         UPDATE referee_phone
         SET 
           phone = @newPhone,
-          phone_type = @phoneType
+          type = @phoneType
         WHERE 
           referee_id = @refereeId AND
           phone = @oldPhone

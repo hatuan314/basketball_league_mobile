@@ -233,7 +233,7 @@ class MatchPlayerStatsApiImpl implements MatchPlayerStatsApi {
       UPDATE match_player_stats
       SET 
         points = @points,
-        fouls = @fouls,
+        fouls = @fouls
       WHERE match_player_stats_id = @id
       RETURNING *;
       ''';

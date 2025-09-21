@@ -110,7 +110,7 @@ class RoundUseCaseImpl implements RoundUseCase {
   }
 
   @override
-  Future<Either<Exception, TopScoresByRoundEntity>> getTopScoresByRound({
+  Future<Either<Exception, TopScoresByRoundEntity?>> getTopScoresByRound({
     int? seasonId,
     int? roundId,
   }) {
