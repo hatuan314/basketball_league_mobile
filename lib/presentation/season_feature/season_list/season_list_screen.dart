@@ -23,6 +23,7 @@ class SeasonListScreen extends StatefulWidget {
 class _SeasonListScreenState extends State<SeasonListScreen> {
   /// Controller cho text field tìm kiếm
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
 
   /// Biến để kiểm soát hiển thị thanh tìm kiếm
   bool _showSearchBar = false;
@@ -52,31 +53,7 @@ class _SeasonListScreenState extends State<SeasonListScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: _showSearchBar ? false : true,
-        title:
-            _showSearchBar
-                ? TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Tìm kiếm giải đấu...',
-                    hintStyle: TextStyle(color: Colors.grey, fontSize: 14.sp),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 8.h),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.clear, color: AppColors.primary),
-                      padding: EdgeInsets.all(8.r),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() {
-                          _showSearchBar = false;
-                        });
-                        context.read<SeasonListCubit>().initial();
-                      },
-                    ),
-                  ),
-                  style: AppStyle.bodyLarge,
-                  autofocus: true,
-                )
-                : Text('Danh sách giải đấu', style: AppStyle.headline4),
+        title: Text('Danh sách giải đấu', style: AppStyle.headline4),
         actions: [
           if (!_showSearchBar) ...[
             IconButton(
@@ -98,19 +75,26 @@ class _SeasonListScreenState extends State<SeasonListScreen> {
           ],
         ],
       ),
-      body: BlocBuilder<SeasonListCubit, SeasonListState>(
-        builder: (context, state) {
-          if (state.status == SeasonListStatus.loading) {
-            return AppLoading();
-          } else if (state.status == SeasonListStatus.error) {
-            return AppErrorStateWidget(
-              errorMessage: state.errorMessage ?? 'Đã xảy ra lỗi',
-              onRetry: () => context.read<SeasonListCubit>().initial(),
-            );
-          } else {
-            return _buildSeasonListView(state.seasons ?? []);
-          }
-        },
+      body: Column(
+        children: [
+          _buildSearchBar(),
+          Expanded(
+            child: BlocBuilder<SeasonListCubit, SeasonListState>(
+              builder: (context, state) {
+                if (state.status == SeasonListStatus.loading) {
+                  return AppLoading();
+                } else if (state.status == SeasonListStatus.error) {
+                  return AppErrorStateWidget(
+                    errorMessage: state.errorMessage ?? 'Đã xảy ra lỗi',
+                    onRetry: () => context.read<SeasonListCubit>().initial(),
+                  );
+                } else {
+                  return _buildSeasonListView(state.seasons ?? []);
+                }
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.orange,
@@ -127,6 +111,35 @@ class _SeasonListScreenState extends State<SeasonListScreen> {
               });
         },
         child: const Icon(Icons.add, color: AppColors.white),
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: EdgeInsets.all(16.sp),
+      child: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          hintText: 'Tìm kiếm giải đấu...',
+          hintStyle: TextStyle(color: Colors.grey, fontSize: 14.sp),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.sp),
+          ),
+          prefixIcon: const Icon(Icons.search),
+          suffixIcon: IconButton(
+            icon: const Icon(Icons.clear),
+            onPressed: () {
+              _searchController.clear();
+              setState(() {
+                _showSearchBar = false;
+              });
+              context.read<SeasonListCubit>().initial();
+            },
+          ),
+        ),
+        style: AppStyle.bodyLarge,
+        autofocus: true,
       ),
     );
   }

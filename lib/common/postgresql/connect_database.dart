@@ -66,6 +66,7 @@ class PostgresConnection {
     await configTrigger.enforceRefereeMatchLimitPerRound();
     await configTrigger.enforceMinTeamColors();
     await configTrigger.createMatchVenue();
+    await configTrigger.createCheckShirtNumber();
     await configTrigger.listTrigger();
     // View
     await configView.createPlayerDetails();

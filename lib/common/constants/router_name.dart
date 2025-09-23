@@ -23,6 +23,8 @@ class RouterName {
 
   /// Player
   static const String playerList = '/player_list';
+  static const String playerCreate = 'player_create';
+  static const String playerEdit = 'player_edit';
 
   /// Referee
   static const String refereeList = '/referee_list';

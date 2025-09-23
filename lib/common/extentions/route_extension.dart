@@ -17,4 +17,6 @@ extension RouteExtension on String {
   String toStadiumRoute() => '${RouterName.stadiumList}/$this';
 
   String toRefereeRoute() => '${RouterName.refereeList}/$this';
+
+  String toPlayerRoute() => '${RouterName.playerList}/$this';
 }

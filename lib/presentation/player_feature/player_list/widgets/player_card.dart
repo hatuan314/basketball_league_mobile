@@ -1,6 +1,11 @@
+import 'package:baseketball_league_mobile/common/constants/router_name.dart';
+import 'package:baseketball_league_mobile/common/extentions/route_extension.dart';
 import 'package:baseketball_league_mobile/domain/entities/player_entity.dart';
+import 'package:baseketball_league_mobile/presentation/player_feature/player_list/bloc/player_list_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 class PlayerCard extends StatelessWidget {
@@ -14,7 +19,7 @@ class PlayerCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to player detail
+          _showPlayerActions(context);
         },
         borderRadius: BorderRadius.circular(12.r),
         child: Padding(
@@ -138,5 +143,71 @@ class PlayerCard extends StatelessWidget {
 
     return '${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}'
         .toUpperCase();
+  }
+  
+  void _showPlayerActions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
+      builder: (context) => Padding(
+        padding: EdgeInsets.symmetric(vertical: 20.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Chỉnh sửa cầu thủ'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(
+                  RouterName.playerEdit.toPlayerRoute(),
+                  extra: player,
+                ).then((value) {
+                  if (value == true) {
+                    context.read<PlayerListCubit>().initial();
+                  }
+                });
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text('Xóa cầu thủ', style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.pop(context);
+                _confirmDeletePlayer(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  void _confirmDeletePlayer(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Xác nhận xóa'),
+        content: Text('Bạn có chắc chắn muốn xóa cầu thủ ${player.fullName}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              if (player.id != null) {
+                // TODO: Implement delete player
+                // context.read<PlayerListCubit>().deletePlayer(player.id!);
+              }
+            },
+            child: const Text('Xóa', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 }

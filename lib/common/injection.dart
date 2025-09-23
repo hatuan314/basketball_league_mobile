@@ -76,6 +76,7 @@ import 'package:baseketball_league_mobile/domain/usecases/season_usecase.dart';
 import 'package:baseketball_league_mobile/domain/usecases/stadium_usecase.dart';
 import 'package:baseketball_league_mobile/domain/usecases/team_usecase.dart';
 import 'package:baseketball_league_mobile/presentation/home/bloc/home_cubit.dart';
+import 'package:baseketball_league_mobile/presentation/player_feature/create_player/bloc/create_player_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/player_feature/player_list/bloc/player_list_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/referee_feature/referee_detail/bloc/referee_detail_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/referee_feature/referee_form/bloc/referee_form_cubit.dart';
@@ -122,6 +123,9 @@ void blocDependencies() {
   sl.registerFactory<HomeCubit>(() => HomeCubit());
   sl.registerFactory<PlayerListCubit>(
     () => PlayerListCubit(playerUseCase: sl<PlayerUsecase>()),
+  );
+  sl.registerFactory<CreatePlayerCubit>(
+    () => CreatePlayerCubit(playerUsecase: sl<PlayerUsecase>()),
   );
   sl.registerFactory<RoundListCubit>(
     () => RoundListCubit(roundUseCase: sl<RoundUseCase>()),

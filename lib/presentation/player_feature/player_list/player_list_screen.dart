@@ -1,9 +1,13 @@
+import 'package:baseketball_league_mobile/common/constants/router_name.dart';
+import 'package:baseketball_league_mobile/common/extentions/route_extension.dart';
 import 'package:baseketball_league_mobile/presentation/player_feature/player_list/bloc/player_list_cubit.dart';
 import 'package:baseketball_league_mobile/presentation/player_feature/player_list/widgets/player_listview.dart';
+import 'package:baseketball_league_mobile/presentation/theme/app_color.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/app_error_state_widget.dart';
 import 'package:baseketball_league_mobile/presentation/widgets/app_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class PlayerListScreen extends StatefulWidget {
   const PlayerListScreen({Key? key}) : super(key: key);
@@ -45,8 +49,9 @@ class _PlayerListScreenState extends State<PlayerListScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.orange,
         onPressed: () {
-          // TODO: Implement add new player
+          context.push(RouterName.playerCreate.toPlayerRoute());
         },
         child: const Icon(Icons.add),
       ),

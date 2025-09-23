@@ -799,6 +799,102 @@ class ConfigTrigger {
     await _conn.execute(createTrigger);
   }
 
+  Future<void> createCheckShirtNumber() async {
+    final exists = await _triggerExists(
+      'enforce_shirt_number_range',
+      'player_season',
+    );
+    if (!exists) {
+      await _createEnforceShirtNumberRange();
+    }
+  }
+
+  Future<void> _createEnforceShirtNumberRange() async {
+    // Xóa trigger nếu đã tồn tại
+    final dropTrigger = '''
+      DROP TRIGGER IF EXISTS enforce_shirt_number_range ON player_season;
+    ''';
+    await _conn.execute(dropTrigger);
+
+    // Tạo function cho trigger
+    final createFunction = '''
+        CREATE OR REPLACE FUNCTION check_shirt_number_range()
+            RETURNS TRIGGER
+        LANGUAGE plpgsql
+        AS E'
+        BEGIN
+            IF NEW.shirt_number < 0 OR NEW.shirt_number > 99 THEN
+                RAISE EXCEPTION ''BL-E026: Số áo của cầu thủ phải trong khoảng 0 đến 99'';
+            END IF;
+            RETURN NEW;
+        END'
+    ''';
+    await _conn.execute(createFunction);
+
+    // Tạo trigger
+    final createTrigger = '''
+      CREATE TRIGGER enforce_shirt_number_range
+        BEFORE INSERT OR UPDATE ON player_season
+        FOR EACH ROW
+      EXECUTE FUNCTION check_shirt_number_range();
+    ''';
+    await _conn.execute(createTrigger);
+  }
+
+  // 8. Đảm bảo số áo cầu thủ nằm trong khoảng 0 - 99 (bổ sung thông điệp lỗi rõ ràng)
+  Future<void> createCheckUniqueShirtNumberInTeam() async {
+    final exists = await _triggerExists(
+      'enforce_unique_shirt_number_in_team',
+      'player_season',
+    );
+    if (!exists) {
+      await _createEnforceUniqueShirtNumberInTeam();
+    }
+  }
+
+  Future<void> _createEnforceUniqueShirtNumberInTeam() async {
+    // Xóa trigger nếu đã tồn tại
+    final dropTrigger = '''
+      DROP TRIGGER IF EXISTS enforce_unique_shirt_number_in_team ON player_season;
+    ''';
+    await _conn.execute(dropTrigger);
+
+    // Tạo function cho trigger
+    final createFunction = '''
+      CREATE OR REPLACE FUNCTION check_unique_shirt_number_in_team()
+          RETURNS TRIGGER
+          LANGUAGE plpgsql
+          AS E'
+      DECLARE
+          dup_exists BOOLEAN;
+      BEGIN
+          SELECT EXISTS (
+              SELECT 1
+              FROM player_season ps
+              WHERE ps.season_team_id = NEW.season_team_id
+                AND ps.shirt_number   = NEW.shirt_number
+                AND ps.player_season_id IS DISTINCT FROM NEW.player_season_id
+          ) INTO dup_exists;
+
+          IF dup_exists THEN
+              RAISE EXCEPTION ''BL-E027: Số áo % đã tồn tại trong đội này ở mùa giải hiện tại'', NEW.shirt_number;
+          END IF;
+
+          RETURN NEW;
+      END;'
+    ''';
+    await _conn.execute(createFunction);
+
+    // Tạo trigger
+    final createTrigger = '''
+      CREATE TRIGGER enforce_unique_shirt_number_in_team
+          BEFORE INSERT OR UPDATE ON player_season
+          FOR EACH ROW
+      EXECUTE FUNCTION check_unique_shirt_number_in_team();
+    ''';
+    await _conn.execute(createTrigger);
+  }
+
   /// Kiểm tra sự tồn tại của trigger
   Future<bool> _triggerExists(String triggerName, String tableName) async {
     // Sử dụng cách an toàn hơn để tránh SQL injection
